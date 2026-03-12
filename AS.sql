@@ -623,34 +623,62 @@ END;
 
 -- Trigger: al 3er llamado del mismo tipo genera multa automáticamente y reinicia contador (RN-F1)
 CREATE OR REPLACE TRIGGER trg_tercer_llamado_multa
-AFTER INSERT ON LLAMADO_ATENCION
-FOR EACH ROW
-DECLARE
-    v_count  NUMBER;
-    v_monto  NUMBER;
-BEGIN
-    -- Contar llamados activos del mismo tipo para esta propiedad
-    SELECT COUNT(*) INTO v_count
-    FROM LLAMADO_ATENCION
-    WHERE id_propiedad  = :NEW.id_propiedad
-      AND id_tipo_cargo = :NEW.id_tipo_cargo;
+FOR INSERT ON LLAMADO_ATENCION
+COMPOUND TRIGGER
 
-    IF MOD(v_count, 3) = 0 THEN
-        -- Tomar el monto del catálogo (TIPO_CARGO)
-        SELECT monto INTO v_monto
-        FROM TIPO_CARGO
-        WHERE id_tipo_cargo = :NEW.id_tipo_cargo;
+    -- Creamos una estructura en memoria para guardar los datos temporalmente
+    TYPE t_llamado IS RECORD (
+        id_propiedad    LLAMADO_ATENCION.id_propiedad%TYPE,
+        id_tipo_cargo   LLAMADO_ATENCION.id_tipo_cargo%TYPE
+    );
+    TYPE t_llamados_tab IS TABLE OF t_llamado INDEX BY PLS_INTEGER;
+    v_llamados t_llamados_tab;
 
-        INSERT INTO CARGO (id_propiedad, id_tipo_cargo, monto, descripcion, estado)
-        VALUES (
-            :NEW.id_propiedad,
-            :NEW.id_tipo_cargo,
-            v_monto,
-            'Multa automática: 3er llamado por ' || (SELECT nombre FROM TIPO_CARGO WHERE id_tipo_cargo = :NEW.id_tipo_cargo),
-            'PENDIENTE'
-        );
-    END IF;
-END;
+    AFTER EACH ROW IS
+        v_idx PLS_INTEGER;
+    BEGIN
+        -- Guardamos los datos de la nueva fila en memoria, NO consultamos la tabla
+        v_idx := v_llamados.COUNT + 1;
+        v_llamados(v_idx).id_propiedad  := :NEW.id_propiedad;
+        v_llamados(v_idx).id_tipo_cargo := :NEW.id_tipo_cargo;
+    END AFTER EACH ROW;
+
+    AFTER STATEMENT IS
+        v_count  NUMBER;
+        v_monto  NUMBER;
+        v_nombre VARCHAR2(50);
+    BEGIN
+        -- El INSERT ya terminó. La tabla es estable. 
+        -- Procesamos los registros guardados en memoria.
+        FOR i IN 1 .. v_llamados.COUNT LOOP
+            
+            -- Ahora sí es seguro hacer el COUNT
+            SELECT COUNT(*) INTO v_count
+            FROM LLAMADO_ATENCION
+            WHERE id_propiedad  = v_llamados(i).id_propiedad
+              AND id_tipo_cargo = v_llamados(i).id_tipo_cargo;
+
+            -- Si es múltiplo de 3, generamos la multa
+            IF v_count > 0 AND MOD(v_count, 3) = 0 THEN
+                
+                SELECT monto, nombre INTO v_monto, v_nombre
+                FROM TIPO_CARGO
+                WHERE id_tipo_cargo = v_llamados(i).id_tipo_cargo;
+
+                INSERT INTO CARGO (id_propiedad, id_tipo_cargo, monto, descripcion, estado)
+                VALUES (
+                    v_llamados(i).id_propiedad,
+                    v_llamados(i).id_tipo_cargo,
+                    v_monto,
+                    'Multa automática: 3er llamado por ' || v_nombre,
+                    'PENDIENTE'
+                );
+            END IF;
+            
+        END LOOP;
+    END AFTER STATEMENT;
+
+END trg_tercer_llamado_multa;
 /
 
 
