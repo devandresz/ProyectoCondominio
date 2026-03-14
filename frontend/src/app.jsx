@@ -47,9 +47,10 @@ import {
 	EyeOff,
 } from 'lucide-react';
 
-// ─────────────────────────────────────────────────────────────
-// DATOS DE MUESTRA (MOCK DATA)
-// ─────────────────────────────────────────────────────────────
+/* ==========================================================================
+   1. DATOS TEMPORALES (MOCKS)
+   TODO: Reemplazar estos arrays cuando se terminen de crear las rutas en el backend
+========================================================================== */
 
 const propiedadesEjemplo = [
 	{
@@ -255,39 +256,63 @@ const notificacionesEjemplo = [
 	},
 ];
 
+/* ==========================================================================
+   2. CONFIGURACIÓN DEL MENÚ Y ROLES
+========================================================================== */
+
 const GRUPOS = [
 	{
 		titulo: 'Residencial & Accesos',
 		IconoGrupo: Home,
 		modulos: [
+			{ id: 'Gestión de Propiedades', Icono: Building, propio: true, roles: ['Administrador'] },
 			{
-				id: 'Gestión de Propiedades',
-				Icono: Building,
-				desc: 'Inventario residencial',
-				propio: true,
+				id: 'Directorio Residentes',
+				Icono: Users,
+				propio: false,
+				roles: ['Administrador', 'Guardia'],
 			},
-			{ id: 'Directorio Residentes', Icono: Users, desc: 'Cuentas y contactos', propio: false },
-			{ id: 'Control Vehicular', Icono: Car, desc: 'Autorización de accesos', propio: true },
-			{ id: 'Pases de Visita (QR)', Icono: QrCode, desc: 'Visitantes y servicios', propio: true },
+			{
+				id: 'Control Vehicular',
+				Icono: Car,
+				propio: true,
+				roles: ['Administrador', 'Guardia', 'Residente'],
+			},
+			{
+				id: 'Pases de Visita (QR)',
+				Icono: QrCode,
+				propio: true,
+				roles: ['Administrador', 'Guardia', 'Residente'],
+			},
 		],
 	},
 	{
 		titulo: 'Seguridad & Garita',
 		IconoGrupo: ShieldAlert,
 		modulos: [
-			{ id: 'Punto de Ingreso', Icono: ShieldCheck, desc: 'Control de garita', propio: false },
-			{ id: 'Bitácora de Seguridad', Icono: BookOpen, desc: 'Eventos del turno', propio: false },
+			{
+				id: 'Punto de Ingreso',
+				Icono: ShieldCheck,
+				propio: false,
+				roles: ['Administrador', 'Guardia'],
+			},
+			{
+				id: 'Bitácora de Seguridad',
+				Icono: BookOpen,
+				propio: false,
+				roles: ['Administrador', 'Guardia'],
+			},
 			{
 				id: 'Inventario Parqueos',
 				Icono: ParkingCircle,
-				desc: 'Gestión de espacios',
 				propio: false,
+				roles: ['Administrador', 'Guardia'],
 			},
 			{
 				id: 'Asignación de Espacios',
 				Icono: ArrowLeftRight,
-				desc: 'Rotación de parqueos',
 				propio: false,
+				roles: ['Administrador'],
 			},
 		],
 	},
@@ -295,32 +320,57 @@ const GRUPOS = [
 		titulo: 'Finanzas & Disciplina',
 		IconoGrupo: Wallet,
 		modulos: [
-			{ id: 'Control de Cuotas', Icono: CreditCard, desc: 'Registro de cobros', propio: false },
-			{ id: 'Historial Financiero', Icono: Zap, desc: 'Estado de cuenta', propio: false },
-			{ id: 'Llamados de Atención', Icono: PhoneCall, desc: 'Avisos preventivos', propio: false },
-			{ id: 'Infracciones y Multas', Icono: AlertTriangle, desc: 'Penalizaciones', propio: true },
+			{
+				id: 'Control de Cuotas',
+				Icono: CreditCard,
+				propio: false,
+				roles: ['Administrador', 'Residente'],
+			},
+			{ id: 'Historial Financiero', Icono: Zap, propio: false, roles: ['Administrador'] },
+			{
+				id: 'Llamados de Atención',
+				Icono: PhoneCall,
+				propio: false,
+				roles: ['Administrador', 'Guardia'],
+			},
+			{
+				id: 'Infracciones y Multas',
+				Icono: AlertTriangle,
+				propio: true,
+				roles: ['Administrador', 'Guardia', 'Residente'],
+			},
 		],
 	},
 	{
 		titulo: 'Operaciones & Soporte',
 		IconoGrupo: Briefcase,
 		modulos: [
-			{ id: 'Mantenimiento de Áreas', Icono: Trees, desc: 'Zonas compartidas', propio: false },
+			{ id: 'Mantenimiento de Áreas', Icono: Trees, propio: false, roles: ['Administrador'] },
 			{
 				id: 'Reservas de Áreas',
 				Icono: CalendarDays,
-				desc: 'Calendario de eventos',
 				propio: false,
+				roles: ['Administrador', 'Residente'],
 			},
-			{ id: 'Mesa de Ayuda', Icono: Ticket, desc: 'Soporte a residentes', propio: false },
-			{ id: 'Catálogos del Sistema', Icono: Layers, desc: 'Tipos y categorías', propio: false },
+			{
+				id: 'Mesa de Ayuda',
+				Icono: Ticket,
+				propio: false,
+				roles: ['Administrador', 'Residente'],
+			},
+			{ id: 'Catálogos del Sistema', Icono: Layers, propio: false, roles: ['Administrador'] },
 		],
 	},
 ];
 
+/* ==========================================================================
+   3. HELPERS Y UTILIDADES
+========================================================================== */
+
 const limpiarBusqueda = (str) =>
 	str ? str.toString().replace(/[-\s]/g, '').toLowerCase() : '';
 
+// Mapeo visual para los colores de los vehículos en la tabla
 function colorVehiculo(color) {
 	const mapa = {
 		Rojo: { bg: '#ef4444', text: '#fff', border: 'transparent' },
@@ -335,9 +385,9 @@ function colorVehiculo(color) {
 	return mapa[color] ?? { bg: '#3f3f46', text: '#d4d4d8', border: 'transparent' };
 }
 
-// ─────────────────────────────────────────────────────────────
-// COMPONENTES BASE (UI)
-// ─────────────────────────────────────────────────────────────
+/* ==========================================================================
+   4. COMPONENTES UI COMPARTIDOS (Botones, Modales, Inputs, Tablas)
+========================================================================== */
 
 function Etiqueta({ texto, variante = 'default' }) {
 	const estilos = {
@@ -590,11 +640,9 @@ function ModuloPendiente({ nombre, Icono }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────
-// BÚHO SVG ANIMADO — REACTIVO Y VIVO
-// ─────────────────────────────────────────────────────────────
-// BÚHO SVG ANIMADO — REACTIVO Y VIVO
-// ─────────────────────────────────────────────────────────────
+/* ==========================================================================
+   5. ASSETS Y ANIMACIONES (Búho Login y Loader)
+========================================================================== */
 
 function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 	const [parpadeo, setParpadeo] = useState(false);
@@ -602,7 +650,7 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 	const aleandoRef = useRef(false);
 	const alaIntervalRef = useRef(null);
 
-	// Parpadeo aleatorio
+	// Controlador de parpadeo aleatorio
 	useEffect(() => {
 		if (tapado) return;
 		let timeout;
@@ -618,10 +666,9 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 		return () => clearTimeout(timeout);
 	}, [tapado]);
 
-	// Aleteo: se activa desde fuera via prop escribiendo
+	// Controlador de movimiento de alas cuando el usuario escribe
 	useEffect(() => {
 		if (pupilaX !== 0 || pupilaY !== 0) {
-			// cuando hay movimiento de pupila (escribiendo email), aletear
 			if (!aleandoRef.current) {
 				aleandoRef.current = true;
 				alaIntervalRef.current = setInterval(() => setAla((p) => !p), 280);
@@ -636,12 +683,9 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 		return () => {};
 	}, [pupilaX, pupilaY]);
 
-	// Limpieza
 	useEffect(() => () => clearInterval(alaIntervalRef.current), []);
 
 	const parpado = parpadeo ? 9.5 : 0;
-
-	// Pupila limitada al radio del iris (6.5 - 3.8 = 2.7 max)
 	const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 	const px = clamp(pupilaX, -2.6, 2.6);
 	const py = clamp(pupilaY, -2.0, 2.0);
@@ -659,7 +703,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 			xmlns="http://www.w3.org/2000/svg"
 			style={{ filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.6))', overflow: 'visible' }}
 		>
-			{/* Alas laterales — aletean al escribir email */}
 			<ellipse
 				cx="28"
 				cy="82"
@@ -682,8 +725,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 				transform={`rotate(${ala ? 14 : 8} 92 82)`}
 				style={{ transition: 'transform 0.28s cubic-bezier(0.34,1.56,0.64,1)' }}
 			/>
-
-			{/* Cuerpo */}
 			<ellipse
 				cx="60"
 				cy="82"
@@ -695,13 +736,9 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 			/>
 			<ellipse cx="60" cy="89" rx="18" ry="22" fill="#3f3f46" />
 			<ellipse cx="60" cy="93" rx="12" ry="16" fill="#52525b" />
-			{/* Cabeza */}
 			<circle cx="60" cy="50" r="27" fill="#2a2a2e" stroke="#3f3f46" strokeWidth="1.5" />
-			{/* Penachos */}
 			<polygon points="42,30 36,14 48,28" fill="#1c1c1f" stroke="#3f3f46" strokeWidth="1" />
 			<polygon points="78,30 84,14 72,28" fill="#1c1c1f" stroke="#3f3f46" strokeWidth="1" />
-
-			{/* ── CARA ABIERTA ── */}
 			<g
 				style={{
 					transition: 'opacity 0.38s cubic-bezier(0.34,1.56,0.64,1)',
@@ -709,8 +746,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 				}}
 			>
 				<ellipse cx="60" cy="52" rx="21" ry="19" fill="#3f3f46" />
-
-				{/* OJO IZQUIERDO */}
 				<circle cx="50" cy="49" r="9.5" fill="#09090b" stroke="#52525b" strokeWidth="1.5" />
 				<circle cx="50" cy="49" r="6.5" fill="#facc15" />
 				<circle
@@ -727,7 +762,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 					fill="white"
 					style={{ transition: 'cx 0.18s ease-out, cy 0.18s ease-out' }}
 				/>
-				{/* Párpado */}
 				<ellipse
 					cx="50"
 					cy={49 - 9.5 + parpado / 2}
@@ -736,8 +770,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 					fill="#2a2a2e"
 					style={{ transition: 'ry 0.1s ease, cy 0.1s ease' }}
 				/>
-
-				{/* OJO DERECHO */}
 				<circle cx="70" cy="49" r="9.5" fill="#09090b" stroke="#52525b" strokeWidth="1.5" />
 				<circle cx="70" cy="49" r="6.5" fill="#facc15" />
 				<circle
@@ -762,12 +794,8 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 					fill="#2a2a2e"
 					style={{ transition: 'ry 0.1s ease, cy 0.1s ease' }}
 				/>
-
-				{/* Pico */}
 				<polygon points="60,57 54,63 66,63" fill="#d97706" />
 			</g>
-
-			{/* ── CARA TAPADA ── */}
 			<g
 				style={{
 					transition: 'opacity 0.38s cubic-bezier(0.34,1.56,0.64,1)',
@@ -776,7 +804,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 			>
 				<ellipse cx="60" cy="52" rx="21" ry="19" fill="#3f3f46" />
 				<polygon points="60,60 54,67 66,67" fill="#d97706" />
-				{/* Ala izquierda */}
 				<ellipse
 					cx="46"
 					cy="48"
@@ -818,7 +845,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 					strokeWidth="0.8"
 					transform="rotate(5 31 53)"
 				/>
-				{/* Ala derecha */}
 				<ellipse
 					cx="74"
 					cy="48"
@@ -861,8 +887,6 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 					transform="rotate(-5 89 53)"
 				/>
 			</g>
-
-			{/* Patas */}
 			<line
 				x1="51"
 				y1="114"
@@ -921,15 +945,10 @@ function BuhoAnimado({ tapado, pupilaX, pupilaY }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────
-// ANIMACIÓN DE CARGA — CONDOMINIO
-// ─────────────────────────────────────────────────────────────
-
 function AnimacionCarga({ mensaje }) {
 	const [frame, setFrame] = useState(0);
 	const [puntos, setPuntos] = useState(0);
 
-	// Luz aleatoria encendida en cada ventana
 	useEffect(() => {
 		const iv = setInterval(() => setFrame((f) => f + 1), 400);
 		return () => clearInterval(iv);
@@ -940,7 +959,6 @@ function AnimacionCarga({ mensaje }) {
 		return () => clearInterval(iv);
 	}, []);
 
-	// Ventanas del edificio — seed determinista + frame para parpadeo
 	const ventanas = Array.from({ length: 30 }, (_, i) => ({
 		x: 14 + (i % 6) * 16,
 		y: 28 + Math.floor(i / 6) * 14,
@@ -967,7 +985,6 @@ function AnimacionCarga({ mensaje }) {
 				overflow: 'hidden',
 			}}
 		>
-			{/* Grid de fondo */}
 			<div
 				style={{
 					position: 'absolute',
@@ -977,7 +994,6 @@ function AnimacionCarga({ mensaje }) {
 					backgroundSize: '40px 40px',
 				}}
 			/>
-			{/* Glow central */}
 			<div
 				style={{
 					position: 'absolute',
@@ -991,11 +1007,8 @@ function AnimacionCarga({ mensaje }) {
 					pointerEvents: 'none',
 				}}
 			/>
-
-			{/* SVG Condominio animado */}
 			<div style={{ position: 'relative', zIndex: 10, marginBottom: '32px' }}>
 				<svg viewBox="0 0 160 130" width="200" height="162" xmlns="http://www.w3.org/2000/svg">
-					{/* Edificio principal izquierdo */}
 					<rect
 						x="8"
 						y="22"
@@ -1006,7 +1019,6 @@ function AnimacionCarga({ mensaje }) {
 						stroke="#3f3f46"
 						strokeWidth="1.5"
 					/>
-					{/* Techo */}
 					<rect
 						x="6"
 						y="18"
@@ -1017,7 +1029,6 @@ function AnimacionCarga({ mensaje }) {
 						stroke="#3f3f46"
 						strokeWidth="1"
 					/>
-					{/* Ventanas edificio izquierdo */}
 					{ventanas.map((v, i) => (
 						<rect
 							key={i}
@@ -1033,8 +1044,6 @@ function AnimacionCarga({ mensaje }) {
 							}}
 						/>
 					))}
-
-					{/* Torre central alta */}
 					<rect
 						x="46"
 						y="6"
@@ -1055,7 +1064,6 @@ function AnimacionCarga({ mensaje }) {
 						stroke="#3f3f46"
 						strokeWidth="1"
 					/>
-					{/* Antena */}
 					<line x1="63" y1="2" x2="63" y2="-10" stroke="#52525b" strokeWidth="1.5" />
 					<circle
 						cx="63"
@@ -1064,7 +1072,6 @@ function AnimacionCarga({ mensaje }) {
 						fill={frame % 3 === 0 ? '#ef4444' : '#7f1d1d'}
 						style={{ transition: 'fill 0.4s' }}
 					/>
-					{/* Ventanas torre */}
 					{ventanasTorre.map((v, i) => (
 						<rect
 							key={i}
@@ -1080,8 +1087,6 @@ function AnimacionCarga({ mensaje }) {
 							}}
 						/>
 					))}
-
-					{/* Edificio derecho */}
 					<rect
 						x="92"
 						y="34"
@@ -1121,10 +1126,7 @@ function AnimacionCarga({ mensaje }) {
 							}}
 						/>
 					))}
-
-					{/* Suelo */}
 					<rect x="0" y="118" width="160" height="4" rx="2" fill="#27272a" />
-					{/* Camino */}
 					<rect
 						x="55"
 						y="118"
@@ -1135,12 +1137,8 @@ function AnimacionCarga({ mensaje }) {
 						stroke="#3f3f46"
 						strokeWidth="0.5"
 					/>
-
-					{/* Luna o sol */}
 					<circle cx="142" cy="16" r="8" fill="#27272a" stroke="#3f3f46" strokeWidth="1" />
 					<circle cx="145" cy="14" r="6" fill="#09090b" />
-
-					{/* Estrellas */}
 					{[
 						[20, 8],
 						[30, 4],
@@ -1159,8 +1157,6 @@ function AnimacionCarga({ mensaje }) {
 					))}
 				</svg>
 			</div>
-
-			{/* Barra de progreso */}
 			<div
 				style={{
 					width: '220px',
@@ -1182,8 +1178,6 @@ function AnimacionCarga({ mensaje }) {
 					}}
 				/>
 			</div>
-
-			{/* Texto */}
 			<p
 				style={{
 					fontSize: '15px',
@@ -1205,9 +1199,9 @@ function AnimacionCarga({ mensaje }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────
-// PANTALLAS DE AUTENTICACIÓN
-// ─────────────────────────────────────────────────────────────
+/* ==========================================================================
+   6. VISTAS INDEPENDIENTES (Login, Garita, Bienvenida)
+========================================================================== */
 
 function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 	const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -1217,16 +1211,12 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 	const [focusPassword, setFocusPassword] = useState(false);
 	const [shake, setShake] = useState(false);
 	const inputEmailRef = useRef(null);
-	const rafRef = useRef(null);
 
-	// Pupila: X e Y en rango -2.6 a 2.6
 	const [pupilaX, setPupilaX] = useState(0);
 	const [pupilaY, setPupilaY] = useState(0);
 
-	// El búho se tapa SOLO cuando: campo contraseña activo Y no mostrar
 	const tapado = focusPassword && !mostrarPassword;
 
-	// Al escribir en email, mover pupila según posición del cursor dentro del texto
 	const actualizarPupila = (val, selStart) => {
 		if (!focusEmail) return;
 		const len = val.length;
@@ -1235,11 +1225,8 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 			setPupilaY(-0.5);
 			return;
 		}
-		// Mapa: cursor al inicio = izquierda-arriba, cursor al final = derecha-centro
 		const ratio = len > 0 ? selStart / Math.max(len, 1) : 0;
-		// X: de -2.5 (inicio) a +2.5 (final)
 		const nx = -2.5 + ratio * 5.0;
-		// Y: ligero movimiento vertical imitando línea de texto
 		const ny = -0.8 + ratio * 0.6;
 		setPupilaX(nx);
 		setPupilaY(ny);
@@ -1252,24 +1239,20 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 		actualizarPupila(val, sel);
 	};
 
-	// Actualizar pupila también al mover el cursor con teclado (sin cambiar texto)
 	const handleEmailKeyUp = (e) => {
 		const el = e.target;
 		actualizarPupila(el.value, el.selectionStart ?? el.value.length);
 	};
 
-	// Al enfocar email: mirar hacia el campo (izquierda-centro)
 	useEffect(() => {
 		if (focusEmail) {
 			const val = inputEmailRef.current?.value ?? '';
 			const sel = inputEmailRef.current?.selectionStart ?? 0;
 			actualizarPupila(val, sel);
 		} else if (focusPassword) {
-			// Campo contraseña: mirar a la derecha
 			setPupilaX(2.4);
 			setPupilaY(0.5);
 		} else {
-			// Ningún campo: al frente
 			setPupilaX(0);
 			setPupilaY(0);
 		}
@@ -1282,10 +1265,9 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 			setTimeout(() => setShake(false), 600);
 			return;
 		}
-		onLogin();
+		onLogin(emailVal, passwordVal);
 	};
 
-	// Inclinación del cuerpo según foco
 	const bodyTransform = tapado
 		? 'scale(0.93) translateY(5px)'
 		: focusEmail
@@ -1299,7 +1281,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 			className="flex w-full h-full relative overflow-hidden"
 			style={{ background: temaOscuro ? '#09090b' : '#f1f5f9' }}
 		>
-			{/* Fondo */}
 			<div
 				className="absolute inset-0"
 				style={{ background: temaOscuro ? '#09090b' : '#f1f5f9' }}
@@ -1337,7 +1318,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 				/>
 			</div>
 
-			{/* Botón tema flotante */}
 			<div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 50 }}>
 				<button
 					onClick={() => setTemaOscuro((t) => !t)}
@@ -1360,15 +1340,9 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 					) : (
 						<Moon style={{ width: '14px', height: '14px', color: '#475569' }} />
 					)}
-					<span
-						style={{ fontSize: '11px', fontWeight: 600, color: temaOscuro ? '#a1a1aa' : '#475569' }}
-					>
-						{temaOscuro ? '' : ''}
-					</span>
 				</button>
 			</div>
 
-			{/* Panel izquierdo decorativo */}
 			<div className="hidden lg:flex flex-col justify-between w-[45%] relative z-10 p-12 border-r border-zinc-800/50">
 				<div>
 					<div className="flex items-center gap-3 mb-16">
@@ -1419,7 +1393,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 				</div>
 			</div>
 
-			{/* Panel derecho: formulario */}
 			<div className="flex-1 flex items-center justify-center relative z-10 p-6">
 				<div
 					style={{
@@ -1430,7 +1403,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 							: 'loginFadeIn 0.7s cubic-bezier(0.16,1,0.3,1) both',
 					}}
 				>
-					{/* Card */}
 					<div
 						style={{
 							background: temaOscuro ? 'rgba(24,24,27,0.88)' : 'rgba(255,255,255,0.92)',
@@ -1443,7 +1415,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 								: '0 16px 48px -12px rgba(15,23,42,0.15)',
 						}}
 					>
-						{/* Búho */}
 						<div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
 							<div
 								style={{
@@ -1455,7 +1426,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 							</div>
 						</div>
 
-						{/* Texto */}
 						<div className="text-center mb-7">
 							<h2
 								style={{
@@ -1473,12 +1443,10 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 							</p>
 						</div>
 
-						{/* Formulario */}
 						<form
 							onSubmit={handleSubmit}
 							style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}
 						>
-							{/* Usuario / correo */}
 							<div>
 								<label
 									style={{
@@ -1491,7 +1459,7 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 										marginBottom: '8px',
 									}}
 								>
-									Usuario
+									Usuario o Correo
 								</label>
 								<div style={{ position: 'relative' }}>
 									<Mail
@@ -1513,7 +1481,7 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 										value={emailVal}
 										onChange={handleEmailChange}
 										onKeyUp={handleEmailKeyUp}
-										placeholder="usuario o correo"
+										placeholder="Ej: admin o admin@test.com"
 										style={{
 											width: '100%',
 											paddingLeft: '42px',
@@ -1542,7 +1510,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 								</div>
 							</div>
 
-							{/* Contraseña */}
 							<div>
 								<label
 									style={{
@@ -1631,7 +1598,6 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 								</div>
 							</div>
 
-							{/* Botón */}
 							<button
 								type="submit"
 								style={{
@@ -1668,22 +1634,11 @@ function VistaLogin({ onLogin, temaOscuro, setTemaOscuro }) {
 									e.currentTarget.style.transform = 'translateY(-1px)';
 								}}
 							>
-								<Lock style={{ width: '15px', height: '15px' }} />
-								Iniciar Sesión
+								<Lock style={{ width: '15px', height: '15px' }} /> Iniciar Sesión
 							</button>
 						</form>
-
-						<p
-							style={{
-								textAlign: 'center',
-								marginTop: '20px',
-								fontSize: '11px',
-								color: temaOscuro ? '#3f3f46' : '#94a3b8',
-							}}
-						></p>
 					</div>
 
-					{/* Badge */}
 					<div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
 						<div
 							style={{
@@ -1876,13 +1831,15 @@ function VistaGarita() {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────
-// COMPONENTES PRINCIPALES (CRUDs)
-// ─────────────────────────────────────────────────────────────
+/* ==========================================================================
+   7. MÓDULOS PRINCIPALES (CRUDs)
+========================================================================== */
 
 function ModuloPropiedades({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState(propiedadesEjemplo);
 	const [busqueda, setBusqueda] = useState('');
+
+	// Controles del modal y formulario
 	const [modal, setModal] = useState(null);
 	const [seleccion, setSeleccion] = useState(null);
 	const [filaActiva, setFilaActiva] = useState(null);
@@ -1896,6 +1853,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 		inquilino: '',
 	});
 
+	// Reglas de negocio para las cuotas
 	const cuotaPorCategoria = { Básica: 500, Intermedia: 800, Completa: 1200 };
 	const parqueosPorCategoria = { Básica: 1, Intermedia: 2, Completa: 3 };
 	const colorCategoria = {
@@ -1904,6 +1862,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 		Completa: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
 	};
 
+	// Lógica de filtrado en tiempo real
 	const termino = limpiarBusqueda(busqueda || filtroGlobal);
 	const filtrados = termino
 		? datos.filter(
@@ -1914,6 +1873,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 			)
 		: datos;
 
+	// Crear o actualizar propiedad
 	function guardarNuevo(e) {
 		if (e) e.preventDefault();
 		if (!form.numero.trim() || !form.propietario.trim()) return;
@@ -1979,6 +1939,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
+			{/* Tarjetas Superiores */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total Unidades"
@@ -2104,6 +2065,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={datos.length} unidad="propiedades" />
 			</div>
 
+			{/* Modal Crear / Editar */}
 			{modal === 'nuevo' && (
 				<Modal
 					titulo={editandoId ? 'Editar Propiedad' : 'Registrar Propiedad'}
@@ -2171,6 +2133,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
+			{/* Modal Detalle */}
 			{modal === 'detalle' && seleccion && (
 				<Modal titulo={`Detalle — ${seleccion.numero}`} alCerrar={() => setModal(null)}>
 					<div className="space-y-0">
@@ -2195,6 +2158,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
+			{/* Alerta Eliminación */}
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar Propiedad?"
@@ -2210,6 +2174,7 @@ function ModuloPropiedades({ filtroGlobal = '' }) {
 function ModuloVehiculos({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState(vehiculosEjemplo);
 	const [busqueda, setBusqueda] = useState('');
+
 	const [modal, setModal] = useState(false);
 	const [filaActiva, setFilaActiva] = useState(null);
 	const [aEliminar, setAEliminar] = useState(null);
@@ -2232,6 +2197,7 @@ function ModuloVehiculos({ filtroGlobal = '' }) {
 			)
 		: datos;
 
+	// Crear o actualizar vehículo
 	function guardar(e) {
 		if (e) e.preventDefault();
 		if (!form.placa.trim() || !form.propiedad) return;
@@ -2505,6 +2471,7 @@ function ModuloVehiculos({ filtroGlobal = '' }) {
 function ModuloInvitaciones({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState(invitacionesEjemplo);
 	const [busqueda, setBusqueda] = useState('');
+
 	const [modal, setModal] = useState(null);
 	const [seleccion, setSeleccion] = useState(null);
 	const [filaActiva, setFilaActiva] = useState(null);
@@ -2530,6 +2497,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 			)
 		: datos;
 
+	// Proceso que revisa automáticamente si una invitación de tipo "Normal" expiró al finalizar el día
 	useEffect(() => {
 		const checarExpiracion = () => {
 			const hoy = new Date().toISOString().split('T')[0];
@@ -2555,6 +2523,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 		return () => clearInterval(intervalo);
 	}, []);
 
+	// Crear o actualizar pase de visita
 	function crear(e) {
 		if (e) e.preventDefault();
 		if (!form.visitante.trim() || !form.propiedad) return;
@@ -2724,6 +2693,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={datos.length} unidad="invitaciones" />
 			</div>
 
+			{/* Modal Crear / Editar */}
 			{modal === 'nuevo' && (
 				<Modal
 					titulo={editandoId ? 'Editar Pase de Visita' : 'Generar Pase de Visita'}
@@ -2767,6 +2737,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 							</Selector>
 						</Campo>
 
+						{/* Información contextual según el tipo de pase */}
 						{form.tipo === 'Normal' && (
 							<div className="flex gap-2 p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
 								<Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -2803,6 +2774,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
+			{/* Modal para visualizar el QR */}
 			{modal === 'qr' && seleccion && (
 				<Modal titulo={`Código QR — ${seleccion.visitante}`} alCerrar={() => setModal(null)}>
 					<div className="flex flex-col items-center gap-5">
@@ -2814,6 +2786,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 									</span>
 								</div>
 							)}
+							{/* Generación dinámica de QR consumiendo API gratuita */}
 							<img
 								src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/garita/validar/${seleccion.codigo}`)}&color=09090b`}
 								alt={`QR para ${seleccion.codigo}`}
@@ -2825,6 +2798,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 							<span className="text-[10px] opacity-70">(Escanea este QR con tu celular)</span>
 						</p>
 
+						{/* Botón de simulación para presentación */}
 						{(seleccion.estado === 'Activo' || seleccion.estado === 'Pendiente') && (
 							<button
 								onClick={() => {
@@ -2857,6 +2831,7 @@ function ModuloInvitaciones({ filtroGlobal = '' }) {
 function ModuloMulta({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState(multasEjemplo);
 	const [busqueda, setBusqueda] = useState('');
+
 	const [modal, setModal] = useState(false);
 	const [filaActiva, setFilaActiva] = useState(null);
 	const [aEliminar, setAEliminar] = useState(null);
@@ -2869,6 +2844,7 @@ function ModuloMulta({ filtroGlobal = '' }) {
 		? datos.filter((m) => limpiarBusqueda(m.propiedad).includes(termino))
 		: datos;
 
+	// Registrar o actualizar sanción/multa
 	function registrar(e) {
 		if (e) e.preventDefault();
 		if (!form.propiedad || !form.infraccion) return;
@@ -2888,6 +2864,7 @@ function ModuloMulta({ filtroGlobal = '' }) {
 				),
 			);
 		} else {
+			// Regla de negocio: Si llega a 3 llamados, se convierte en MULTA ACTIVA
 			const existente = datos.find(
 				(m) => m.propiedad === form.propiedad && m.infraccion === form.infraccion,
 			);
@@ -2937,6 +2914,7 @@ function ModuloMulta({ filtroGlobal = '' }) {
 		setAEliminar(null);
 	}
 
+	// Componente visual para mostrar los puntitos de advertencia
 	function IndicadorLlamados({ cantidad }) {
 		const progreso = cantidad % 3 === 0 && cantidad > 0 ? 3 : cantidad % 3;
 		const esMulta = cantidad >= 3;
@@ -3142,29 +3120,35 @@ function ModuloMulta({ filtroGlobal = '' }) {
 	);
 }
 
-// ─────────────────────────────────────────────────────────────
-// COMPONENTE PRINCIPAL (RUTEADOR Y LAYOUT)
-// ─────────────────────────────────────────────────────────────
+/* ==========================================================================
+   8. COMPONENTE PRINCIPAL (App / Layout / Router)
+========================================================================== */
+
 export default function App() {
+	// Captura rápida para la vista de validación de QR (fuera del panel de admin)
 	if (window.location.pathname.startsWith('/garita')) {
 		return <VistaGarita />;
 	}
 
+	// Estados globales de la aplicación
 	const [pantallaActual, setPantallaActual] = useState('login');
-	const [moduloActivo, setModuloActivo] = useState('Gestión de Propiedades');
+	const [usuarioActual, setUsuarioActual] = useState(null); // Guarda el perfil traído de Oracle
+	const [moduloActivo, setModuloActivo] = useState('');
 	const [busquedaGlobal, setBusquedaGlobal] = useState('');
+
+	// Controles del Layout
 	const [grupoExpandido, setGrupoExpandido] = useState(0);
 	const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 	const [notisAbiertas, setNotisAbiertas] = useState(false);
 	const [hayNotisNuevas, setHayNotisNuevas] = useState(true);
 	const [verHistorialNotis, setVerHistorialNotis] = useState(false);
 	const [temaOscuro, setTemaOscuro] = useState(true);
-	const [dashboardKey, setDashboardKey] = useState(0);
 	const [cargando, setCargando] = useState(false);
 	const [mensajeCarga, setMensajeCarga] = useState('');
 
 	const notisRef = useRef(null);
 
+	// Cerrar panel de notificaciones si se hace click afuera
 	useEffect(() => {
 		const clickAfuera = (e) => {
 			if (notisRef.current && !notisRef.current.contains(e.target)) setNotisAbiertas(false);
@@ -3173,15 +3157,55 @@ export default function App() {
 		return () => document.removeEventListener('mousedown', clickAfuera);
 	}, []);
 
-	const manejarLogin = () => {
-		setMensajeCarga('Ingresando al panel de gestión');
+	// Gestión de Sesión con el Backend Node.js
+	const manejarLogin = async (usuario, contrasena) => {
+		setMensajeCarga('Validando credenciales...');
 		setCargando(true);
-		setTimeout(() => {
+
+		try {
+			const respuesta = await fetch('http://localhost:1000/usuarios/login', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ nombreUsuario: usuario, contrasena: contrasena }),
+			});
+
+			const data = await respuesta.json();
+
+			if (respuesta.ok) {
+				console.log('Login exitoso:', data);
+				setUsuarioActual(data);
+
+				// Redirigir a la pantalla correcta según el Rol de Oracle
+				if (data.ROL === 'Administrador') {
+					setModuloActivo('Gestión de Propiedades');
+				} else if (data.ROL === 'Guardia') {
+					setModuloActivo('Pases de Visita (QR)');
+					setGrupoExpandido(1);
+				} else {
+					setModuloActivo('Pases de Visita (QR)');
+				}
+
+				setPantallaActual('dashboard');
+			} else {
+				alert(data.mensaje || 'Credenciales incorrectas');
+			}
+		} catch (error) {
+			console.error('Error conectando al servidor:', error);
+			alert(
+				'Error: No se pudo conectar con el servidor backend. Verifica que esté corriendo en el puerto 1000.',
+			);
+		} finally {
 			setCargando(false);
-			setPantallaActual('dashboard');
-		}, 2200);
+		}
 	};
 
+	// Filtrar el menú lateral dinámicamente usando RBAC (Control Basado en Roles)
+	const gruposPermitidos = GRUPOS.map((grupo) => ({
+		...grupo,
+		modulos: grupo.modulos.filter((m) => m.roles.includes(usuarioActual?.ROL)),
+	})).filter((grupo) => grupo.modulos.length > 0);
+
+	// Diccionario que conecta el nombre del menú con el Componente Real
 	const VISTAS = {
 		'Gestión de Propiedades': <ModuloPropiedades filtroGlobal={busquedaGlobal} />,
 		'Control Vehicular': <ModuloVehiculos filtroGlobal={busquedaGlobal} />,
@@ -3218,14 +3242,14 @@ export default function App() {
 					)}
 					{pantallaActual === 'dashboard' && (
 						<>
+							{/* Sidebar - Menú Lateral */}
 							<aside
 								onMouseEnter={() => setIsSidebarHovered(true)}
 								onMouseLeave={() => setIsSidebarHovered(false)}
-								className={`flex flex-col border-r border-borde bg-tarjeta flex-shrink-0 transition-[width] duration-300 ease-in-out relative z-20 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)] overflow-hidden ${
-									isSidebarHovered ? 'w-[280px]' : 'w-[80px]'
-								}`}
+								className={`flex flex-col border-r border-borde bg-tarjeta flex-shrink-0 transition-[width] duration-300 ease-in-out relative z-20 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)] overflow-hidden ${isSidebarHovered ? 'w-[280px]' : 'w-[80px]'}`}
 							>
 								<div className="flex flex-col h-full w-[280px]">
+									{/* Encabezado Logo */}
 									<div className="flex items-center h-16 pl-[24px] pr-6 border-b border-borde flex-shrink-0">
 										<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primario text-fondo flex-shrink-0 shadow-sm">
 											<Building className="w-4 h-4" />
@@ -3237,8 +3261,9 @@ export default function App() {
 										</span>
 									</div>
 
+									{/* Opciones del Menú */}
 									<nav className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar py-4">
-										{GRUPOS.map((grupo, gi) => {
+										{gruposPermitidos.map((grupo, gi) => {
 											const expandido = grupoExpandido === gi;
 											const tieneModuloActivo = grupo.modulos.some((m) => m.id === moduloActivo);
 											const resaltado = isSidebarHovered
@@ -3254,9 +3279,7 @@ export default function App() {
 													<button
 														onClick={() => setGrupoExpandido(gi === grupoExpandido ? null : gi)}
 														title={!isSidebarHovered ? grupo.titulo : undefined}
-														className={`flex items-center w-full pl-[12px] pr-4 py-3 rounded-xl transition-colors group ${
-															resaltado ? 'bg-zinc-800/80 shadow-md' : 'hover:bg-zinc-800/50'
-														}`}
+														className={`flex items-center w-full pl-[12px] pr-4 py-3 rounded-xl transition-colors group ${resaltado ? 'bg-zinc-800/80 shadow-md' : 'hover:bg-zinc-800/50'}`}
 													>
 														<div className="flex items-center justify-center w-[32px] h-[32px] flex-shrink-0">
 															<grupo.IconoGrupo
@@ -3293,13 +3316,7 @@ export default function App() {
 																		onClick={() => {
 																			if (!bloqueado) setModuloActivo(id);
 																		}}
-																		className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-																			activo
-																				? 'bg-primario/10 text-primario font-bold'
-																				: bloqueado
-																					? 'text-zinc-600 cursor-not-allowed opacity-60'
-																					: 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
-																		}`}
+																		className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activo ? 'bg-primario/10 text-primario font-bold' : bloqueado ? 'text-zinc-600 cursor-not-allowed opacity-60' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}
 																	>
 																		<Icono
 																			className={`w-[18px] h-[18px] flex-shrink-0 ${activo ? 'text-primario' : 'text-zinc-500'}`}
@@ -3320,6 +3337,7 @@ export default function App() {
 										})}
 									</nav>
 
+									{/* Perfil del Usuario Logueado */}
 									<div className="flex-shrink-0 border-t border-borde bg-fondo/50 py-4 px-[20px]">
 										<div
 											className={`flex items-center p-1 rounded-xl transition-colors ${isSidebarHovered ? 'bg-tarjeta border border-borde shadow-sm' : 'border border-transparent bg-transparent hover:bg-zinc-800/50 cursor-pointer'}`}
@@ -3331,16 +3349,20 @@ export default function App() {
 												className={`ml-3 min-w-0 transition-opacity duration-300 ${isSidebarHovered ? 'opacity-100' : 'opacity-0'}`}
 											>
 												<p className="text-[13px] font-bold text-primario leading-tight whitespace-nowrap">
-													Admin Principal
+													{usuarioActual ? `${usuarioActual.NOMBRE} ${usuarioActual.APELLIDO}` : 'Usuario'}
 												</p>
-												<p className="text-[10px] text-zinc-500 leading-tight truncate">Conectado</p>
+												<p className="text-[10px] font-bold text-emerald-500 leading-tight truncate">
+													{usuarioActual?.ROL}
+												</p>
 											</div>
 										</div>
 									</div>
 								</div>
 							</aside>
 
+							{/* Panel Derecho Principal */}
 							<div className="flex flex-col flex-1 min-w-0 relative z-10">
+								{/* Topbar */}
 								<header className="flex items-center justify-between h-16 px-8 border-b border-borde bg-fondo/80 backdrop-blur-md flex-shrink-0 sticky top-0 z-30">
 									<div>
 										<h1 className="text-[17px] font-bold font-title text-primario leading-tight">
@@ -3456,7 +3478,10 @@ export default function App() {
 										<div className="h-6 w-px bg-borde mx-1"></div>
 
 										<button
-											onClick={() => setPantallaActual('login')}
+											onClick={() => {
+												setPantallaActual('login');
+												setUsuarioActual(null);
+											}}
 											className="px-4 py-2 text-[13px] font-bold rounded-lg bg-primario text-fondo hover:bg-white/90 transition-all shadow-sm"
 										>
 											Cerrar sesión
@@ -3464,6 +3489,7 @@ export default function App() {
 									</div>
 								</header>
 
+								{/* Renderizado Dinámico del Módulo Seleccionado */}
 								<main className="flex-1 p-8 overflow-y-auto bg-fondo custom-scrollbar transition-colors duration-300">
 									<div className="max-w-7xl mx-auto">{vistaActual}</div>
 								</main>
@@ -3473,6 +3499,7 @@ export default function App() {
 				</>
 			)}
 
+			{/* Modal Historial Notificaciones Completas */}
 			{verHistorialNotis && pantallaActual === 'dashboard' && (
 				<Modal titulo="Historial de Notificaciones" alCerrar={() => setVerHistorialNotis(false)}>
 					<div className="max-h-[60vh] overflow-y-auto custom-scrollbar pr-2 space-y-2">
@@ -3518,114 +3545,78 @@ export default function App() {
 			<style
 				dangerouslySetInnerHTML={{
 					__html: `
-        @keyframes loginFadeIn {
-          from { opacity: 0; transform: translateY(24px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes loginShake {
-          0%,100% { transform: translateX(0); }
-          15%      { transform: translateX(-8px); }
-          30%      { transform: translateX(7px); }
-          45%      { transform: translateX(-6px); }
-          60%      { transform: translateX(5px); }
-          75%      { transform: translateX(-3px); }
-          90%      { transform: translateX(2px); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.4; }
-        }
-        @keyframes barraProgreso {
-          0%   { width: 0%; margin-left: 0%; }
-          50%  { width: 60%; margin-left: 20%; }
-          100% { width: 0%; margin-left: 100%; }
-        }
-        @keyframes dashSlideUp {
-          from { opacity: 0; transform: translateY(22px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes dashFadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        /* Dashboard entry — staggered cards and table */
-        .dashboard-main-anim > div > div { animation: dashFadeIn 0.5s ease both; }
-        .dashboard-main-anim > div > div:nth-child(1) { animation: dashSlideUp 0.55s cubic-bezier(0.22,1,0.36,1) 0.05s both; }
-        .dashboard-main-anim > div > div:nth-child(2) { animation: dashSlideUp 0.55s cubic-bezier(0.22,1,0.36,1) 0.15s both; }
-        .dashboard-main-anim > div > div:nth-child(3) { animation: dashSlideUp 0.55s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
-        /* Metric cards stagger */
-        .dashboard-main-anim .grid > div:nth-child(1) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.08s both; }
-        .dashboard-main-anim .grid > div:nth-child(2) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.16s both; }
-        .dashboard-main-anim .grid > div:nth-child(3) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.24s both; }
-        .dashboard-main-anim .grid > div:nth-child(4) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.32s both; }
+				@keyframes loginFadeIn { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+				@keyframes loginShake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-8px); } 30% { transform: translateX(7px); } 45% { transform: translateX(-6px); } 60% { transform: translateX(5px); } 75% { transform: translateX(-3px); } 90% { transform: translateX(2px); } }
+				@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+				@keyframes barraProgreso { 0% { width: 0%; margin-left: 0%; } 50% { width: 60%; margin-left: 20%; } 100% { width: 0%; margin-left: 100%; } }
+				@keyframes dashSlideUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+				@keyframes dashFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* SCROLLBAR */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #52525b; border-radius: 10px; }
+				/* Dashboard Entry Animations */
+				.dashboard-main-anim > div > div { animation: dashFadeIn 0.5s ease both; }
+				.dashboard-main-anim > div > div:nth-child(1) { animation: dashSlideUp 0.55s cubic-bezier(0.22,1,0.36,1) 0.05s both; }
+				.dashboard-main-anim > div > div:nth-child(2) { animation: dashSlideUp 0.55s cubic-bezier(0.22,1,0.36,1) 0.15s both; }
+				.dashboard-main-anim > div > div:nth-child(3) { animation: dashSlideUp 0.55s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
 
-        /* FILAS DE TABLA MODO OSCURO — sin rayas, fondo transparente */
-        .fila-normal            { background-color: transparent; }
-        .fila-normal:hover      { background-color: rgba(63,63,70,0.35) !important; }
-        .fila-seleccionada      { background-color: rgba(63,63,70,0.55) !important; }
+				.dashboard-main-anim .grid > div:nth-child(1) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.08s both; }
+				.dashboard-main-anim .grid > div:nth-child(2) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.16s both; }
+				.dashboard-main-anim .grid > div:nth-child(3) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.24s both; }
+				.dashboard-main-anim .grid > div:nth-child(4) { animation: dashSlideUp 0.5s cubic-bezier(0.22,1,0.36,1) 0.32s both; }
 
-        /* MODO CLARO — paleta completa */
-        .tema-claro { background-color: #f1f5f9 !important; color: #0f172a !important; }
+				/* Scrollbar Customization */
+				.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+				.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+				.custom-scrollbar::-webkit-scrollbar-thumb { background: #52525b; border-radius: 10px; }
 
-        /* Fondos */
-        .tema-claro .bg-fondo          { background-color: #f1f5f9 !important; }
-        .tema-claro .bg-fondo\\/80     { background-color: rgba(241,245,249,0.92) !important; }
-        .tema-claro .bg-fondo\\/50     { background-color: rgba(241,245,249,0.75) !important; }
-        .tema-claro .bg-tarjeta        { background-color: #ffffff !important; }
-        .tema-claro .bg-tarjeta\\/50   { background-color: rgba(255,255,255,0.75) !important; }
-        .tema-claro .bg-tarjeta\\/20   { background-color: transparent !important; }
+				/* Filas de Tabla Modo Oscuro */
+				.fila-normal { background-color: transparent; }
+				.fila-normal:hover { background-color: rgba(63,63,70,0.35) !important; }
+				.fila-seleccionada { background-color: rgba(63,63,70,0.55) !important; }
 
-        /* Bordes */
-        .tema-claro .border-borde      { border-color: #e2e8f0 !important; }
-        .tema-claro .border-borde\\/50 { border-color: rgba(226,232,240,0.65) !important; }
-        .tema-claro .border-borde\\/40 { border-color: rgba(226,232,240,0.5) !important; }
+				/* =========================================
+				   PALETA MODO CLARO 
+				========================================= */
+				.tema-claro { background-color: #f1f5f9 !important; color: #0f172a !important; }
+				.tema-claro .bg-fondo { background-color: #f1f5f9 !important; }
+				.tema-claro .bg-fondo\\/80 { background-color: rgba(241,245,249,0.92) !important; }
+				.tema-claro .bg-fondo\\/50 { background-color: rgba(241,245,249,0.75) !important; }
+				.tema-claro .bg-tarjeta { background-color: #ffffff !important; }
+				.tema-claro .bg-tarjeta\\/50 { background-color: rgba(255,255,255,0.75) !important; }
+				.tema-claro .bg-tarjeta\\/20 { background-color: transparent !important; }
 
-        /* Textos */
-        .tema-claro .text-primario     { color: #0f172a !important; }
-        .tema-claro .text-secundario   { color: #64748b !important; }
-        .tema-claro .text-zinc-300     { color: #334155 !important; }
-        .tema-claro .text-zinc-400     { color: #475569 !important; }
-        .tema-claro .text-zinc-500     { color: #64748b !important; }
-        .tema-claro .text-zinc-600     { color: #94a3b8 !important; }
-        .tema-claro .text-zinc-700     { color: #cbd5e1 !important; }
+				.tema-claro .border-borde { border-color: #e2e8f0 !important; }
+				.tema-claro .border-borde\\/50 { border-color: rgba(226,232,240,0.65) !important; }
+				.tema-claro .border-borde\\/40 { border-color: rgba(226,232,240,0.5) !important; }
 
-        /* Fondos zinc */
-        .tema-claro .bg-zinc-800       { background-color: #e2e8f0 !important; }
-        .tema-claro .bg-zinc-800\\/50  { background-color: rgba(226,232,240,0.55) !important; }
-        .tema-claro .bg-zinc-800\\/60  { background-color: rgba(226,232,240,0.65) !important; }
-        .tema-claro .bg-zinc-800\\/80  { background-color: rgba(226,232,240,0.85) !important; }
-        .tema-claro .bg-zinc-900\\/40  { background-color: rgba(241,245,249,0.65) !important; }
-        .tema-claro .bg-zinc-700\\/60  { background-color: rgba(203,213,225,0.7) !important; }
+				.tema-claro .text-primario { color: #0f172a !important; }
+				.tema-claro .text-secundario { color: #64748b !important; }
+				.tema-claro .text-zinc-300 { color: #334155 !important; }
+				.tema-claro .text-zinc-400 { color: #475569 !important; }
+				.tema-claro .text-zinc-500 { color: #64748b !important; }
+				.tema-claro .text-zinc-600 { color: #94a3b8 !important; }
+				.tema-claro .text-zinc-700 { color: #cbd5e1 !important; }
 
-        /* Hovers generales */
-        .tema-claro .hover\\:bg-zinc-800:hover      { background-color: #cbd5e1 !important; }
-        .tema-claro .hover\\:bg-zinc-800\\/50:hover { background-color: rgba(203,213,225,0.5) !important; }
-        .tema-claro .hover\\:bg-zinc-700\\/30:hover { background-color: rgba(203,213,225,0.45) !important; }
-        .tema-claro .hover\\:bg-fondo\\/50:hover    { background-color: rgba(241,245,249,0.85) !important; }
+				.tema-claro .bg-zinc-800 { background-color: #e2e8f0 !important; }
+				.tema-claro .bg-zinc-800\\/50 { background-color: rgba(226,232,240,0.55) !important; }
+				.tema-claro .bg-zinc-800\\/60 { background-color: rgba(226,232,240,0.65) !important; }
+				.tema-claro .bg-zinc-800\\/80 { background-color: rgba(226,232,240,0.85) !important; }
+				.tema-claro .bg-zinc-900\\/40 { background-color: rgba(241,245,249,0.65) !important; }
+				.tema-claro .bg-zinc-700\\/60 { background-color: rgba(203,213,225,0.7) !important; }
 
-        /* Filas tabla en modo claro — fondo blanco uniforme, hover suave */
-        .tema-claro .fila-normal            { background-color: #ffffff !important; }
-        .tema-claro .fila-normal:hover      { background-color: #f1f5f9 !important; }
-        .tema-claro .fila-seleccionada      { background-color: #e2e8f0 !important; }
+				.tema-claro .hover\\:bg-zinc-800:hover { background-color: #cbd5e1 !important; }
+				.tema-claro .hover\\:bg-zinc-800\\/50:hover { background-color: rgba(203,213,225,0.5) !important; }
+				.tema-claro .hover\\:bg-zinc-700\\/30:hover { background-color: rgba(203,213,225,0.45) !important; }
+				.tema-claro .hover\\:bg-fondo\\/50:hover { background-color: rgba(241,245,249,0.85) !important; }
 
-        /* Cabecera tabla claro */
-        .tema-claro thead tr { background-color: #f8fafc !important; }
-
-        /* Scrollbar claro */
-        .tema-claro .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; }
-
-        /* Focus ring */
-        .tema-claro .focus-within\\:ring-zinc-800:focus-within { --tw-ring-color: #94a3b8 !important; }
-
-        /* Sombras suavizadas en claro */
-        .tema-claro .shadow-sm  { box-shadow: 0 1px 3px rgba(15,23,42,0.07) !important; }
-        .tema-claro .shadow-2xl { box-shadow: 0 8px 32px rgba(15,23,42,0.10) !important; }
-      `,
+				.tema-claro .fila-normal { background-color: #ffffff !important; }
+				.tema-claro .fila-normal:hover { background-color: #f1f5f9 !important; }
+				.tema-claro .fila-seleccionada { background-color: #e2e8f0 !important; }
+				.tema-claro thead tr { background-color: #f8fafc !important; }
+				.tema-claro .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; }
+				.tema-claro .focus-within\\:ring-zinc-800:focus-within { --tw-ring-color: #94a3b8 !important; }
+				.tema-claro .shadow-sm { box-shadow: 0 1px 3px rgba(15,23,42,0.07) !important; }
+				.tema-claro .shadow-2xl { box-shadow: 0 8px 32px rgba(15,23,42,0.10) !important; }
+			`,
 				}}
 			/>
 		</div>
