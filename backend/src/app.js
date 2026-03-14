@@ -5,8 +5,10 @@ import { enrutadorTickets } from './routes/tickets.js';
 import { enrutadorParqueos } from './routes/parqueos.js';
 import { enrutadorUsuarios } from './routes/usuarios.js';
 import { enrutadorLlamadasAtencion } from './routes/llamadasAtencion.js';
+import { enrutadorMultas } from './routes/multas.js';
 import { middlewareCors } from './middlewares/cors.js';
 import { PORT } from './config/config.js';
+
 
 const aplicacion = express();
 // Middlewares
@@ -20,6 +22,7 @@ aplicacion.use('/tickets', enrutadorTickets);
 aplicacion.use('/usuarios', enrutadorUsuarios);
 aplicacion.use('/parqueos', enrutadorParqueos);
 aplicacion.use('/llamadasAtencion', enrutadorLlamadasAtencion);
+aplicacion.use('/multas', enrutadorMultas);
 
 if (process.env.NODE_ENV !== 'test') {
 	aplicacion.listen(PORT, () => {
