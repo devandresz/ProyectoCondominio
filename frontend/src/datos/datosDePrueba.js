@@ -310,6 +310,12 @@ export const GRUPOS = [
 				propio: false,
 				roles: ['Administrador', 'Guardia', 'Residente'],
 			},
+			{
+	id: 'Tipos de Cargo',
+	Icono: Layers,
+	propio: true,
+	roles: ['Administrador'],
+},
 		],
 	},
 	{

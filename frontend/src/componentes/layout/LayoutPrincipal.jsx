@@ -4,6 +4,7 @@ import { Topbar } from './Topbar.jsx';
 import { ModuloPendiente } from '../ModuloPendiente.jsx';
 import { GRUPOS } from '../../datos/datosDePrueba.js';
 import useStore from '../../estado/useStore.js';
+import ModuloTiposCargo from '../../paginas/modulos/ModuloTiposCargo.jsx';
 
 // Módulos propios conectados al backend
 import UsuariosPagina from '../../paginas/UsuariosPagina.jsx';
@@ -22,6 +23,7 @@ const SUBTITULOS = {
 	'Pases de Visita (QR)': 'Generación de códigos de acceso temporales',
 	'Infracciones y Multas': 'Bitácora de faltas y control de sanciones',
 	'Mesa de Ayuda': 'Gestión de tickets asignados al personal',
+	'Tipos de Cargo': 'Catálogo de conceptos financieros, cargos dinámicos y multas',
 };
 
 export default function LayoutPrincipal() {
@@ -36,6 +38,7 @@ export default function LayoutPrincipal() {
 		'Infracciones y Multas': <ModuloMulta filtroGlobal={busquedaGlobal} />,
 		'Directorio Residentes': <UsuariosPagina filtroGlobal={busquedaGlobal} />,
 		'Mesa de Ayuda': <TicketsPagina filtroGlobal={busquedaGlobal} />,
+		'Tipos de Cargo': <ModuloTiposCargo filtroGlobal={busquedaGlobal} />,
 	};
 
 	const infoModulo = GRUPOS.flatMap((g) => g.modulos).find((m) => m.id === moduloActivo);
