@@ -4,6 +4,7 @@ import LoginPagina from '../paginas/LoginPagina.jsx';
 import GaritaPagina from '../paginas/GaritaPagina.jsx';
 import LayoutPrincipal from '../componentes/layout/LayoutPrincipal.jsx';
 
+
 export default function EnrutadorPrincipal() {
 	return (
 		<BrowserRouter>
@@ -12,6 +13,7 @@ export default function EnrutadorPrincipal() {
 				<Route path="/login" element={<LoginPagina />} />
 				<Route path="/garita" element={<GaritaPagina />} />
 				<Route path="/garita/validar/:codigo" element={<GaritaPagina />} />
+				
 
 				{/* Rutas protegidas */}
 				<Route

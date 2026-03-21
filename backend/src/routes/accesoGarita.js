@@ -8,28 +8,40 @@ export const enrutadorAccesoGarita = Router();
 // Todas las rutas requieren estar autenticado
 enrutadorAccesoGarita.use(autenticacion);
 
-// Solo el administrador puede crear, actualizar y eliminar tickets
+// Ruta para el guardia que escanea el QR
 enrutadorAccesoGarita.get(
-	'/',
-	verificarRol('Administrador', 'Guardia'),
-	AccesoGaritaController.obtenerTodos,
+    '/validar/:qr',
+    verificarRol('Administrador', 'Guardia'),
+    AccesoGaritaController.validarQr
 );
-enrutadorAccesoGarita.post('/', verificarRol('Administrador'), AccesoGaritaController.crear);
 
 enrutadorAccesoGarita.get(
-	'/:id',
-	verificarRol('Administrador', 'Guardia'),
-	AccesoGaritaController.obtenerPorId,
+    '/',
+    verificarRol('Administrador', 'Guardia'),
+    AccesoGaritaController.obtenerTodos,
+);
+
+// IMPORTANTE: Agregamos "Guardia" para que pueda guardar el acceso
+enrutadorAccesoGarita.post(
+    '/', 
+    verificarRol('Administrador', 'Guardia'), 
+    AccesoGaritaController.crear
+);
+
+enrutadorAccesoGarita.get(
+    '/:id',
+    verificarRol('Administrador', 'Guardia'),
+    AccesoGaritaController.obtenerPorId,
 );
 
 enrutadorAccesoGarita.put(
-	'/:id',
-	verificarRol('Administrador'),
-	AccesoGaritaController.actualizar,
+    '/:id',
+    verificarRol('Administrador'),
+    AccesoGaritaController.actualizar,
 );
 
 enrutadorAccesoGarita.delete(
-	'/:id',
-	verificarRol('Administrador'),
-	AccesoGaritaController.eliminar,
+    '/:id',
+    verificarRol('Administrador'),
+    AccesoGaritaController.eliminar,
 );

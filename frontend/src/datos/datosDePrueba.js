@@ -236,11 +236,11 @@ export const GRUPOS = [
 		titulo: 'Residencial & Accesos',
 		IconoGrupo: Home,
 		modulos: [
-			{ id: 'Gestión de Propiedades', Icono: Building, propio: false, roles: ['Administrador'] },
+			{ id: 'Gestión de Propiedades', Icono: Building, propio: true, roles: ['Administrador'] },
 			{
 				id: 'Directorio Residentes',
 				Icono: Users,
-				propio: true,
+				propio: false,
 				roles: ['Administrador', 'Guardia'],
 			},
 			{
@@ -252,7 +252,7 @@ export const GRUPOS = [
 			{
 				id: 'Pases de Visita (QR)',
 				Icono: QrCode,
-				propio: false,
+				propio: true,
 				roles: ['Administrador', 'Guardia', 'Residente'],
 			},
 		],
@@ -326,7 +326,7 @@ export const GRUPOS = [
 			{
 				id: 'Mesa de Ayuda',
 				Icono: Ticket,
-				propio: true,
+				propio: false,
 				roles: ['Administrador', 'Residente'],
 			},
 			{ id: 'Catálogos del Sistema', Icono: Layers, propio: false, roles: ['Administrador'] },

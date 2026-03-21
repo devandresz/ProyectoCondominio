@@ -9,6 +9,10 @@ import { enrutadorMultas } from './routes/multas.js';
 import { enrutadorAccesoGarita } from './routes/accesoGarita.js';
 import { middlewareCors } from './middlewares/cors.js';
 import { PORT } from './config/config.js';
+import { enrutadorInvitaciones } from './routes/invitaciones.js';
+
+import { enrutadorPropiedades } from './routes/propiedades.js';
+
 
 const aplicacion = express();
 // Middlewares
@@ -24,6 +28,10 @@ aplicacion.use('/parqueos', enrutadorParqueos);
 aplicacion.use('/llamadasAtencion', enrutadorLlamadasAtencion);
 aplicacion.use('/accesoGarita', enrutadorAccesoGarita);
 aplicacion.use('/multas', enrutadorMultas);
+
+//Andres
+aplicacion.use('/propiedades', enrutadorPropiedades);
+aplicacion.use('/invitaciones', enrutadorInvitaciones);
 
 if (process.env.NODE_ENV !== 'test') {
 	aplicacion.listen(PORT, () => {
