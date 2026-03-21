@@ -9,6 +9,10 @@ import { enrutadorTiposCargo } from './routes/tiposCargo.js';
 import { enrutadorAccesoGarita } from './routes/accesoGarita.js';
 import { middlewareCors } from './middlewares/cors.js';
 import { PORT } from './config/config.js';
+import { enrutadorCargosFinancieros } from './routes/cargosFinancieros.js';
+import { enrutadorAreasSociales } from './routes/areasSociales.js';
+
+
 
 const aplicacion = express();
 // Middlewares
@@ -24,6 +28,8 @@ aplicacion.use('/parqueos', enrutadorParqueos);
 aplicacion.use('/llamadasAtencion', enrutadorLlamadasAtencion);
 aplicacion.use('/accesoGarita', enrutadorAccesoGarita);
 aplicacion.use('/tipos-cargo', enrutadorTiposCargo);
+aplicacion.use('/cargos-financieros', enrutadorCargosFinancieros);
+aplicacion.use('/areas-sociales', enrutadorAreasSociales);
 
 if (process.env.NODE_ENV !== 'test') {
 	aplicacion.listen(PORT, () => {
