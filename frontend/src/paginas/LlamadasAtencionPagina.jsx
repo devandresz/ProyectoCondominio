@@ -171,7 +171,7 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 						))}
 					</tbody>
 				</table>
-				<PieTabla mostrados={filtrados.length} total={llamadasAtencion.length} unidad="tickets" />
+				<PieTabla mostrados={filtrados.length} total={llamadasAtencion.length} unidad="llamados" />
 			</div>
 
 			{/* Modal crear/editar */}

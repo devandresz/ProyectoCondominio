@@ -255,6 +255,12 @@ export const GRUPOS = [
 				propio: false,
 				roles: ['Administrador', 'Guardia', 'Residente'],
 			},
+			{
+				id: 'Propietarios e Inquilinos',
+				Icono: Users,
+				propio: true,
+				roles: ['Administrador', 'Guardia'],
+			},
 		],
 	},
 	{
@@ -270,7 +276,7 @@ export const GRUPOS = [
 			{
 				id: 'Bitácora de Seguridad',
 				Icono: BookOpen,
-				propio: false,
+				propio: true,
 				roles: ['Administrador', 'Guardia'],
 			},
 			{

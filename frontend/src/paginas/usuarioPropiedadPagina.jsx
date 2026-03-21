@@ -10,8 +10,9 @@ import {
 	XCircle,
 	History,
 	CarFront,
+	PersonStanding,
 } from 'lucide-react';
-import { useParqueos } from '../hooks/useParqueo.js';
+import { useUsuarioPropiedad } from '../hooks/useUsuarioPropiedad.js';
 import { usuariosApi } from '../api/usuariosApi.js';
 import { TarjetaMetrica, Etiqueta } from '../componentes/ui/Etiquetas.jsx';
 import { BuscadorCasa } from '../componentes/ui/Buscador.jsx';
@@ -21,14 +22,15 @@ import { Modal, ModalConfirmacion } from '../componentes/ui/Modales.jsx';
 import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
+import { formatearFecha } from '../utilidades/formatearFecha.js';
 
 const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
 
-export default function ParqueosPagina({ filtroGlobal = '' }) {
+export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 	const usuario = useStore((s) => s.usuario);
 	const esAdmin = usuario?.ROL === 'Administrador';
 
-	const { parqueos, cargando, error, crear, actualizar, eliminar } = useParqueos();
+	const { up, cargando, error, crear, actualizar, eliminar } = useUsuarioPropiedad();
 
 	const [busqueda, setBusqueda] = useState('');
 	const [modal, setModal] = useState(null);
@@ -52,28 +54,26 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 	}, []);
 
 	const [form, setForm] = useState({
+		idUsuario: '',
 		idPropiedad: '',
-		numeroParqueo: '',
-		descripcion: '',
-		activo: 1,
+		tipoVinculo: '',
+		fechaFin: '',
 	});
 
 	const termino = limpiar(busqueda || filtroGlobal);
 	const filtrados = termino
-		? parqueos.filter(
+		? up.filter(
 				(p) =>
-					limpiar(p.NUMERO_PARQUEO).includes(termino) ||
-					limpiar(p.ACTIVO).includes(termino) ||
-					limpiar(p.ID_PARQUEO?.toString()).includes(termino),
+					limpiar(p.ID_PROPIEDAD).includes(termino) || limpiar(p.ID_USUARIO).includes(termino),
 			)
-		: parqueos;
+		: up;
 
 	const abrirCrear = () => {
 		setForm({
+			idUsuario: '',
 			idPropiedad: '',
-			numeroParqueo: '',
-			descripcion: '',
-			activo: '',
+			tipoVinculo: '',
+			fechaFin: '',
 		});
 		setErrorModal('');
 		setModal('crear');
@@ -82,10 +82,10 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 	const abrirEditar = (p) => {
 		setSeleccion(p);
 		setForm({
+			idUsuario: p.ID_USUARIO,
 			idPropiedad: p.ID_PROPIEDAD,
-			numeroParqueo: p.NUMERO_PARQUEO,
-			descripcion: p.DESCRIPCION,
-			activo: p.ACTIVO,
+			tipoVinculo: p.TIPO_VINCULO,
+			fechaFin: p.FECHA_FIN,
 		});
 		setErrorModal('');
 		setModal('editar');
@@ -102,16 +102,16 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 		try {
 			const datosAEnviar = {
 				...form,
+				idUsuario: Number(form.idUsuario),
 				idPropiedad: Number(form.idPropiedad),
-				numeroParqueo: Number(form.numeroParqueo),
-				descripcion: form.descripcion,
-				activo: form.activo,
+				tipoVinculo: form.tipoVinculo,
+				fechaFin: form.fechaFin,
 			};
 
 			if (modal === 'crear') {
 				await crear(datosAEnviar);
 			} else {
-				await actualizar(seleccion.ID_PARQUEO, datosAEnviar);
+				await actualizar(seleccion.ID_USUARIO_PROPIEDAD, datosAEnviar);
 			}
 			setModal(null);
 		} catch (err) {
@@ -121,36 +121,31 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 
 	const confirmarEliminar = async () => {
 		try {
-			await eliminar(aEliminar.ID_PARQUEO);
+			await eliminar(aEliminar.ID_USUARIO_PROPIEDAD);
 		} catch (err) {
 			console.error('Error al eliminar:', extraerError(err));
 		}
 		setAEliminar(null);
 	};
 
-	if (cargando) return <div className="text-secundario text-sm p-8">Cargando parqueos...</div>;
+	if (cargando) return <div className="text-secundario text-sm p-8">Cargando up...</div>;
 	if (error) return <div className="text-red-400 text-sm p-8">{error}</div>;
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
 			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
+				<TarjetaMetrica etiqueta="Total" valor={up.length} Icono={CarFront} fondo="bg-zinc-800" />
 				<TarjetaMetrica
-					etiqueta="Total"
-					valor={parqueos.length}
-					Icono={CarFront}
-					fondo="bg-zinc-800"
-				/>
-				<TarjetaMetrica
-					etiqueta="Abiertos"
-					valor={parqueos.filter((p) => p.ACTIVO === 1).length}
-					Icono={Clock}
+					etiqueta="Propietarios"
+					valor={up.filter((p) => p.TIPO_VINCULO === 'Propietario').length}
+					Icono={PersonStanding}
 					fondo="bg-sky-500/10"
 				/>
 				<TarjetaMetrica
-					etiqueta="Cerrados"
-					valor={parqueos.filter((p) => p.ACTIVO === 0).length}
-					Icono={XCircle}
+					etiqueta="Inquilino"
+					valor={up.filter((p) => p.TIPO_VINCULO === 'Inquilino').length}
+					Icono={PersonStanding}
 					fondo="bg-zinc-500/10"
 				/>
 			</div>
@@ -161,28 +156,28 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
 					{esAdmin && (
 						<BtnPrimario onClick={abrirCrear}>
-							<Plus className="w-4 h-4" /> Nuevo Parqueo
+							<Plus className="w-4 h-4" /> Nuevo Propietario / Inquilino
 						</BtnPrimario>
 					)}
 				</div>
 				<table className="w-full">
 					<CabeceraTabla
-						columnas={['#', 'No. Parqueo', 'Descripción', 'Propiedad', 'Estado', 'Acciones']}
+						columnas={['#', 'No. Usuario', 'No. Propiedad', 'Vínculo', 'Duración', 'Acciones']}
 					/>
 					<tbody>
 						{filtrados.map((p) => (
 							<Fila
-								key={p.ID_PARQUEO}
-								seleccionada={filaActiva === p.ID_PARQUEO}
-								onClick={() => setFilaActiva(filaActiva === p.ID_PARQUEO ? null : p.ID_PARQUEO)}
+								key={p.ID_USUARIO_PROPIEDAD}
+								seleccionada={filaActiva === p.ID_USUARIO_PROPIEDAD}
+								onClick={() =>
+									setFilaActiva(filaActiva === p.ID_USUARIO_PROPIEDAD ? null : p.ID_USUARIO_PROPIEDAD)
+								}
 							>
-								<Celda mono>{p.ID_PARQUEO}</Celda>
-								<Celda>{p.NUMERO_PARQUEO}</Celda>
-								<Celda>{p.DESCRIPCION}</Celda>
-								<Celda>{p.NUMERO_PROPIEDAD}</Celda>
-								<Celda>
-									<Etiqueta texto={p.ACTIVO === 1 ? 'ACTIVO' : 'INACTIVO'} />
-								</Celda>
+								<Celda mono>{p.ID_USUARIO_PROPIEDAD}</Celda>
+								<Celda>{p.ID_USUARIO}</Celda>
+								<Celda>{p.ID_PROPIEDAD}</Celda>
+								<Celda>{p.TIPO_VINCULO}</Celda>
+								<Celda>{formatearFecha(p.FECHA_FIN)}</Celda>
 								<td className="px-4 py-3">
 									<div className="flex items-center gap-1">
 										<BtnAccion onClick={() => abrirVer(p)} Icono={Eye} titulo="Ver" />
@@ -203,17 +198,31 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 						))}
 					</tbody>
 				</table>
-				<PieTabla mostrados={filtrados.length} total={parqueos.length} unidad="parqueos" />
+				<PieTabla mostrados={filtrados.length} total={up.length} unidad="up" />
 			</div>
 
 			{/* Modal crear/editar */}
 			{(modal === 'crear' || modal === 'editar') && (
 				<Modal
-					titulo={modal === 'crear' ? 'Nuevo Parqueo' : 'Editar Parqueo'}
+					titulo={modal === 'crear' ? 'Nuevo Vinculo' : 'Editar Vinculo'}
 					alCerrar={() => setModal(null)}
 				>
 					<form onSubmit={guardar} className="space-y-4">
 						<div className="grid grid-cols-2 gap-4">
+							<Campo etiqueta="Usuario">
+								<Selector
+									required
+									value={form.idUsuario}
+									onChange={(e) => setForm({ ...form, idUsuario: e.target.value })}
+								>
+									<option value="">Seleccionar...</option>
+									{personal.map((u) => (
+										<option key={u.ID_USUARIO} value={u.ID_USUARIO}>
+											{u.NOMBRE_USUARIO} — {u.NOMBRE} {u.APELLIDO} ({u.ROL})
+										</option>
+									))}
+								</Selector>
+							</Campo>
 							<Campo etiqueta="Propiedad">
 								<Selector
 									required
@@ -228,42 +237,28 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 									))}
 								</Selector>
 							</Campo>
-							<Campo etiqueta="Numero de parqueo">
+							<Campo etiqueta="Tipo de Vinculo">
+								<Selector
+									required
+									value={form.tipoVinculo}
+									onChange={(e) => setForm({ ...form, tipoVinculo: e.target.value })}
+								>
+									<option value="">Seleccionar...</option>
+									<option value="Propietario">Propietario</option>
+									<option value="Inquilino">Inquilino</option>
+								</Selector>
+							</Campo>
+							<Campo etiqueta="Fecha Fin">
 								<input
 									type="text"
 									required
-									value={form.numeroParqueo}
-									onChange={(e) => setForm({ ...form, numeroParqueo: e.target.value })}
-									placeholder="Detalle del parqueo"
+									value={form.fechaFin}
+									onChange={(e) => setForm({ ...form, fechaFin: e.target.value })}
+									placeholder="Fecha de pago"
 									className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
 								/>
 							</Campo>
 						</div>
-						<Campo etiqueta="Descripción">
-							<textarea
-								required
-								value={form.descripcion}
-								onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-								placeholder="Detalle del parqueo"
-								rows={3}
-								className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
-							/>
-						</Campo>
-						<Campo etiqueta="Estado">
-							<input
-								required
-								type="radio"
-								value={'Activo'}
-								onChange={(e) => setForm({ ...form, activo: e.target.value })}
-								checked
-							/>
-							<input
-								required
-								type="radio"
-								value={'Inactivo'}
-								onChange={(e) => setForm({ ...form, activo: e.target.value })}
-							/>
-						</Campo>
 						{errorModal && <p className="text-red-400 text-xs">{errorModal}</p>}
 						<BotonesModal
 							alCancelar={() => setModal(null)}
@@ -278,11 +273,11 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 				<Modal titulo="Detalle del Parqueo" alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
 						{[
-							['#', seleccion.ID_PARQUEO],
-							['No. Parqueo', seleccion.NUMERO_PARQUEO],
-							['No. Propiedad', seleccion.NUMERO_PROPIEDAD],
-							['Descripcion', seleccion.DESCRIPCION],
-							['Estado', seleccion.ACTIVO],
+							['#', seleccion.ID_USUARIO_PROPIEDAD],
+							['No. Usuario', seleccion.ID_USUARIO],
+							['No. Propiedad', seleccion.ID_PROPIEDAD],
+							['Tipo de Vínculo', seleccion.TIPO_VINCULO],
+							['Fecha de Pago', formatearFecha(seleccion.FECHA_FIN)],
 						].map(([lbl, val]) => (
 							<div key={lbl} className="flex justify-between border-b border-borde pb-2">
 								<span className="text-secundario">{lbl}</span>

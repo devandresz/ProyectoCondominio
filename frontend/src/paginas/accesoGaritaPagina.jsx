@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
 	Plus,
 	Eye,
@@ -10,9 +10,9 @@ import {
 	XCircle,
 	History,
 	CarFront,
+	FileWarningIcon,
 } from 'lucide-react';
-import { useParqueos } from '../hooks/useParqueo.js';
-import { usuariosApi } from '../api/usuariosApi.js';
+import { useAccesoGarita } from '../hooks/useAccesoGarita.js';
 import { TarjetaMetrica, Etiqueta } from '../componentes/ui/Etiquetas.jsx';
 import { BuscadorCasa } from '../componentes/ui/Buscador.jsx';
 import { BtnPrimario, BtnAccion, BotonesModal } from '../componentes/ui/Botones.jsx';
@@ -21,14 +21,15 @@ import { Modal, ModalConfirmacion } from '../componentes/ui/Modales.jsx';
 import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
+import { formatearFecha } from '../utilidades/formatearFecha.js';
 
 const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
 
-export default function ParqueosPagina({ filtroGlobal = '' }) {
+export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 	const usuario = useStore((s) => s.usuario);
 	const esAdmin = usuario?.ROL === 'Administrador';
 
-	const { parqueos, cargando, error, crear, actualizar, eliminar } = useParqueos();
+	const { accesoGarita, cargando, error, crear, actualizar, eliminar } = useAccesoGarita();
 
 	const [busqueda, setBusqueda] = useState('');
 	const [modal, setModal] = useState(null);
@@ -36,63 +37,42 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 	const [seleccion, setSeleccion] = useState(null);
 	const [aEliminar, setAEliminar] = useState(null);
 	const [errorModal, setErrorModal] = useState('');
-	const [personal, setPersonal] = useState([]);
 
 	// Cargar guardias y colaboradores activos al montar
-	useEffect(() => {
-		usuariosApi
-			.obtenerTodos()
-			.then((res) => {
-				const filtrados = res.data.filter(
-					(u) => (u.ROL === 'Guardia' || u.ROL === 'Colaborador') && u.ACTIVO === 1,
-				);
-				setPersonal(filtrados);
-			})
-			.catch(() => setPersonal([]));
-	}, []);
 
 	const [form, setForm] = useState({
-		idPropiedad: '',
-		numeroParqueo: '',
-		descripcion: '',
-		activo: 1,
+		idInvitacion: '',
+		idGuardia: '',
+		tipoDocumento: '',
+		numeroDocumento: '',
+		nombreCompletoReal: '',
+		observaciones: '',
 	});
 
 	const termino = limpiar(busqueda || filtroGlobal);
 	const filtrados = termino
-		? parqueos.filter(
-				(p) =>
-					limpiar(p.NUMERO_PARQUEO).includes(termino) ||
-					limpiar(p.ACTIVO).includes(termino) ||
-					limpiar(p.ID_PARQUEO?.toString()).includes(termino),
+		? accesoGarita.filter(
+				(ag) =>
+					limpiar(ag.ID_ACCESO).includes(termino) ||
+					limpiar(ag.ID_INVITACION).includes(termino) ||
+					limpiar(ag.NUMERO_DOCUMENTO?.toString()).includes(termino),
 			)
-		: parqueos;
+		: accesoGarita;
 
-	const abrirCrear = () => {
+	const abrirEditar = (ag) => {
+		setSeleccion(ag);
 		setForm({
-			idPropiedad: '',
-			numeroParqueo: '',
-			descripcion: '',
-			activo: '',
-		});
-		setErrorModal('');
-		setModal('crear');
-	};
-
-	const abrirEditar = (p) => {
-		setSeleccion(p);
-		setForm({
-			idPropiedad: p.ID_PROPIEDAD,
-			numeroParqueo: p.NUMERO_PARQUEO,
-			descripcion: p.DESCRIPCION,
-			activo: p.ACTIVO,
+			tipoDocumento: '',
+			numeroDocumento: '',
+			nombreCompletoReal: '',
+			observaciones: '',
 		});
 		setErrorModal('');
 		setModal('editar');
 	};
 
-	const abrirVer = (p) => {
-		setSeleccion(p);
+	const abrirVer = (ag) => {
+		setSeleccion(ag);
 		setModal('ver');
 	};
 
@@ -100,18 +80,21 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 		e.preventDefault();
 		setErrorModal('');
 		try {
+			//Aqui haré cambios con los ID
 			const datosAEnviar = {
 				...form,
-				idPropiedad: Number(form.idPropiedad),
-				numeroParqueo: Number(form.numeroParqueo),
-				descripcion: form.descripcion,
-				activo: form.activo,
+				idInvitacion: Number(form.idInvitacion),
+				idGuardia: Number(form.idGuardia),
+				tipoDocumento: form.tipoDocumento,
+				numeroDocumento: form.numeroDocumento,
+				nombreCompletoReal: form.nombreCompletoReal,
+				observaciones: form.observaciones,
 			};
 
 			if (modal === 'crear') {
 				await crear(datosAEnviar);
 			} else {
-				await actualizar(seleccion.ID_PARQUEO, datosAEnviar);
+				await actualizar(seleccion.ID_ACCESO, datosAEnviar);
 			}
 			setModal(null);
 		} catch (err) {
@@ -121,14 +104,14 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 
 	const confirmarEliminar = async () => {
 		try {
-			await eliminar(aEliminar.ID_PARQUEO);
+			await eliminar(aEliminar.ID_ACCESO);
 		} catch (err) {
 			console.error('Error al eliminar:', extraerError(err));
 		}
 		setAEliminar(null);
 	};
 
-	if (cargando) return <div className="text-secundario text-sm p-8">Cargando parqueos...</div>;
+	if (cargando) return <div className="text-secundario text-sm p-8">Cargando bitácora...</div>;
 	if (error) return <div className="text-red-400 text-sm p-8">{error}</div>;
 
 	return (
@@ -137,19 +120,19 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total"
-					valor={parqueos.length}
-					Icono={CarFront}
+					valor={accesoGarita.length}
+					Icono={FileWarningIcon}
 					fondo="bg-zinc-800"
 				/>
 				<TarjetaMetrica
-					etiqueta="Abiertos"
-					valor={parqueos.filter((p) => p.ACTIVO === 1).length}
+					etiqueta="Invitaciones activas"
+					valor={accesoGarita.filter((p) => p.ACTIVO === 1).length}
 					Icono={Clock}
 					fondo="bg-sky-500/10"
 				/>
 				<TarjetaMetrica
-					etiqueta="Cerrados"
-					valor={parqueos.filter((p) => p.ACTIVO === 0).length}
+					etiqueta="Invitaciones Inactivas"
+					valor={accesoGarita.filter((p) => p.ACTIVO === 0).length}
 					Icono={XCircle}
 					fondo="bg-zinc-500/10"
 				/>
@@ -159,38 +142,48 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
-					{esAdmin && (
-						<BtnPrimario onClick={abrirCrear}>
-							<Plus className="w-4 h-4" /> Nuevo Parqueo
-						</BtnPrimario>
-					)}
 				</div>
 				<table className="w-full">
 					<CabeceraTabla
-						columnas={['#', 'No. Parqueo', 'Descripción', 'Propiedad', 'Estado', 'Acciones']}
+						columnas={[
+							'#',
+							'No. Invitacion',
+							'Tipo Documento',
+							'No. Documento',
+							'Nombre',
+							'Observaciones',
+							'Hora de ingreso',
+							'Fecha expiración',
+							'Estado',
+							'Acciones',
+						]}
 					/>
 					<tbody>
-						{filtrados.map((p) => (
+						{filtrados.map((ag) => (
 							<Fila
-								key={p.ID_PARQUEO}
-								seleccionada={filaActiva === p.ID_PARQUEO}
-								onClick={() => setFilaActiva(filaActiva === p.ID_PARQUEO ? null : p.ID_PARQUEO)}
+								key={ag.ID_ACCESO}
+								seleccionada={filaActiva === ag.ID_ACCESO}
+								onClick={() => setFilaActiva(filaActiva === ag.ID_ACCESO ? null : ag.ID_ACCESO)}
 							>
-								<Celda mono>{p.ID_PARQUEO}</Celda>
-								<Celda>{p.NUMERO_PARQUEO}</Celda>
-								<Celda>{p.DESCRIPCION}</Celda>
-								<Celda>{p.NUMERO_PROPIEDAD}</Celda>
+								<Celda mono>{ag.ID_ACCESO}</Celda>
+								<Celda>{ag.ID_INVITACION}</Celda>
+								<Celda>{ag.TIPO_DOCUMENTO}</Celda>
+								<Celda>{ag.NUMERO_DOCUMENTO}</Celda>
+								<Celda>{ag.NOMBRE_COMPLETO_REAL}</Celda>
+								<Celda>{ag.OBSERVACIONES}</Celda>
+								<Celda>{formatearFecha(ag.HORA_INGRESO)}</Celda>
+								<Celda>{formatearFecha(ag.FECHA_EXPIRACION)}</Celda>
 								<Celda>
-									<Etiqueta texto={p.ACTIVO === 1 ? 'ACTIVO' : 'INACTIVO'} />
+									<Etiqueta texto={ag.ACTIVO === 1 ? 'ACTIVO' : 'INACTIVO'} />
 								</Celda>
 								<td className="px-4 py-3">
 									<div className="flex items-center gap-1">
-										<BtnAccion onClick={() => abrirVer(p)} Icono={Eye} titulo="Ver" />
+										<BtnAccion onClick={() => abrirVer(ag)} Icono={Eye} titulo="Ver" />
 										{esAdmin && (
 											<>
-												<BtnAccion onClick={() => abrirEditar(p)} Icono={Pencil} titulo="Editar" />
+												<BtnAccion onClick={() => abrirEditar(ag)} Icono={Pencil} titulo="Editar" />
 												<BtnAccion
-													onClick={() => setAEliminar(p)}
+													onClick={() => setAEliminar(ag)}
 													Icono={Trash2}
 													titulo="Eliminar"
 													colorHover="hover:text-red-400"
@@ -203,65 +196,57 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 						))}
 					</tbody>
 				</table>
-				<PieTabla mostrados={filtrados.length} total={parqueos.length} unidad="parqueos" />
+				<PieTabla mostrados={filtrados.length} total={accesoGarita.length} unidad="accesos" />
 			</div>
 
 			{/* Modal crear/editar */}
 			{(modal === 'crear' || modal === 'editar') && (
 				<Modal
-					titulo={modal === 'crear' ? 'Nuevo Parqueo' : 'Editar Parqueo'}
+					titulo={modal === 'crear' ? 'Nuevo acceso' : 'Editar acceso'}
 					alCerrar={() => setModal(null)}
 				>
 					<form onSubmit={guardar} className="space-y-4">
 						<div className="grid grid-cols-2 gap-4">
-							<Campo etiqueta="Propiedad">
+							<Campo etiqueta="Tipo Documento">
 								<Selector
 									required
-									value={form.idPropiedad}
-									onChange={(e) => setForm({ ...form, idPropiedad: e.target.value })}
+									value={form.tipoDocumento}
+									onChange={(e) => setForm({ ...form, tipoDocumento: e.target.value })}
 								>
 									<option value="">Seleccionar...</option>
-									{personal.map((u) => (
-										<option key={u.ID_USUARIO} value={u.ID_USUARIO}>
-											{u.NOMBRE_USUARIO} — {u.NOMBRE} {u.APELLIDO} ({u.ROL})
-										</option>
-									))}
+									<option value="DPI">DPI</option>
+									<option value="Licencia">Licencia</option>
 								</Selector>
 							</Campo>
-							<Campo etiqueta="Numero de parqueo">
+							<Campo etiqueta="Numero Documento">
 								<input
 									type="text"
 									required
-									value={form.numeroParqueo}
-									onChange={(e) => setForm({ ...form, numeroParqueo: e.target.value })}
-									placeholder="Detalle del parqueo"
+									value={form.numeroDocumento}
+									onChange={(e) => setForm({ ...form, numeroDocumento: e.target.value })}
+									placeholder="Número del documento"
 									className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
 								/>
 							</Campo>
 						</div>
-						<Campo etiqueta="Descripción">
-							<textarea
+						<Campo etiqueta="Nombre completo">
+							<input
+								type="text"
 								required
-								value={form.descripcion}
-								onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-								placeholder="Detalle del parqueo"
-								rows={3}
+								value={form.nombreCompletoReal}
+								onChange={(e) => setForm({ ...form, nombreCompletoReal: e.target.value })}
+								placeholder="Nombre completo del invitado"
 								className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
 							/>
 						</Campo>
-						<Campo etiqueta="Estado">
+						<Campo etiqueta="Observaciones">
 							<input
+								type="text"
 								required
-								type="radio"
-								value={'Activo'}
-								onChange={(e) => setForm({ ...form, activo: e.target.value })}
-								checked
-							/>
-							<input
-								required
-								type="radio"
-								value={'Inactivo'}
-								onChange={(e) => setForm({ ...form, activo: e.target.value })}
+								value={form.observaciones}
+								onChange={(e) => setForm({ ...form, observaciones: e.target.value })}
+								placeholder="Observaciones"
+								className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
 							/>
 						</Campo>
 						{errorModal && <p className="text-red-400 text-xs">{errorModal}</p>}
@@ -278,10 +263,16 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 				<Modal titulo="Detalle del Parqueo" alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
 						{[
-							['#', seleccion.ID_PARQUEO],
-							['No. Parqueo', seleccion.NUMERO_PARQUEO],
-							['No. Propiedad', seleccion.NUMERO_PROPIEDAD],
-							['Descripcion', seleccion.DESCRIPCION],
+							['#', seleccion.ID_LLAMADO],
+							['No. Invitacion', seleccion.ID_INVITACION],
+							['No. Guardia', seleccion.ID_GUARDIA],
+							['Nombre', seleccion.NOMBRE_COMPLETO_REAL],
+							['Tipo de Documento', seleccion.TIPO_DOCUMENTO],
+							['Numero de Documento', seleccion.NUMERO_DOCUMENTO],
+							['Observaciones', seleccion.observaciones],
+							['Hora de ingreso', formatearFecha(seleccion.HORA_INGRESO)],
+							['Fecha de generación', formatearFecha(seleccion.FECHA_GENERACION)],
+							['Fecha de expiracion', formatearFecha(seleccion.FECHA_EXPIRACION)],
 							['Estado', seleccion.ACTIVO],
 						].map(([lbl, val]) => (
 							<div key={lbl} className="flex justify-between border-b border-borde pb-2">
@@ -297,7 +288,7 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar parqueo?"
-					mensaje={`Se eliminará el parqueo "${aEliminar.NUMERO_PARQUEO}" de forma permanente.`}
+					mensaje={`Se eliminará el registro "${aEliminar.ID_INVITACION}" de forma permanente.`}
 					onConfirmar={confirmarEliminar}
 					onCancelar={() => setAEliminar(null)}
 				/>
