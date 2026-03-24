@@ -1,0 +1,33 @@
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Logs
+logs/
+*.log
+
+# Entorno
+.env
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Cachés y builds
+/dist/
+/build/
+/coverage/
+*.cache
+
+# Archivos de editor/IDE
+.vscode/
+.idea/
+*.iml
+
+# Archivos temporales y backups
+*.swp
+*.swo
+*.bak
+*.tmp
+*.pid
+*.seed

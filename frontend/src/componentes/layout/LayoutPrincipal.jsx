@@ -7,6 +7,8 @@ import useStore from '../../estado/useStore.js';
 import ModuloTiposCargo from '../../paginas/modulos/ModuloTiposCargo.jsx';
 import ModuloCargosFinancieros from '../../paginas/modulos/ModuloCargosFinancieros.jsx';
 import ModuloAreasSociales from '../../paginas/modulos/ModuloAreasSociales.jsx';
+import PagosPagina from '../../paginas/PagosPagina.jsx';
+import ReservasPagina from '../../paginas/ReservasPagina.jsx';
 
 // Módulos propios conectados al backend
 import UsuariosPagina from '../../paginas/UsuariosPagina.jsx';
@@ -32,6 +34,7 @@ const SUBTITULOS = {
 	'Tipos de Cargo': 'Catálogo de conceptos financieros, cargos dinámicos y multas',
 	'Cargos Financieros': 'Consulta de estado de cuenta por propiedad y cuotas mensuales',
 	'Áreas Sociales': 'Gestión de espacios comunes, horarios y precio por hora',
+	'Reservas de Áreas': 'Calendario y gestión de áreas sociales',
 	'Inventario Parqueos': 'Inventario de parqueos disponibles',
 	'Llamados de Atención': 'Listado de llamadas de atención acumuladas',
 	'Bitácora de Seguridad': 'Bitácora y registro de las personas que han ingresado.',
@@ -53,6 +56,8 @@ export default function LayoutPrincipal() {
 		'Tipos de Cargo': <ModuloTiposCargo filtroGlobal={busquedaGlobal} />,
 		'Cargos Financieros': <ModuloCargosFinancieros />,
 		'Áreas Sociales': <ModuloAreasSociales />,
+		'Control de Cuotas': <PagosPagina filtroGlobal={busquedaGlobal} />,
+		'Reservas de Áreas': <ReservasPagina filtroGlobal={busquedaGlobal} />,
 		'Inventario Parqueos': <ParqueosPagina filtroGlobal={busquedaGlobal} />,
 		'Llamados de Atención': <LlamadasAtencionPagina filtroGlobal={busquedaGlobal} />,
 		'Propietarios e Inquilinos': <UsuarioPropiedadPagina filtroGlobal={busquedaGlobal} />,
