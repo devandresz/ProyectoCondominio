@@ -165,27 +165,27 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 						columnas={['#', 'No. Usuario', 'No. Propiedad', 'Vínculo', 'Duración', 'Acciones']}
 					/>
 					<tbody>
-						{filtrados.map((p) => (
+						{filtrados.map((up) => (
 							<Fila
-								key={p.ID_USUARIO_PROPIEDAD}
-								seleccionada={filaActiva === p.ID_USUARIO_PROPIEDAD}
+								key={up.ID_USUARIO_PROPIEDAD}
+								seleccionada={filaActiva === up.ID_USUARIO_PROPIEDAD}
 								onClick={() =>
-									setFilaActiva(filaActiva === p.ID_USUARIO_PROPIEDAD ? null : p.ID_USUARIO_PROPIEDAD)
+									setFilaActiva(filaActiva === up.ID_USUARIO_PROPIEDAD ? null : up.ID_USUARIO_PROPIEDAD)
 								}
 							>
-								<Celda mono>{p.ID_USUARIO_PROPIEDAD}</Celda>
-								<Celda>{p.ID_USUARIO}</Celda>
-								<Celda>{p.ID_PROPIEDAD}</Celda>
-								<Celda>{p.TIPO_VINCULO}</Celda>
-								<Celda>{formatearFecha(p.FECHA_FIN)}</Celda>
+								<Celda mono>{up.ID_USUARIO_PROPIEDAD}</Celda>
+								<Celda>{up.ID_USUARIO}</Celda>
+								<Celda>{up.ID_PROPIEDAD}</Celda>
+								<Celda>{up.TIPO_VINCULO}</Celda>
+								<Celda>{formatearFecha(up.FECHA_FIN)}</Celda>
 								<td className="px-4 py-3">
 									<div className="flex items-center gap-1">
-										<BtnAccion onClick={() => abrirVer(p)} Icono={Eye} titulo="Ver" />
+										<BtnAccion onClick={() => abrirVer(up)} Icono={Eye} titulo="Ver" />
 										{esAdmin && (
 											<>
-												<BtnAccion onClick={() => abrirEditar(p)} Icono={Pencil} titulo="Editar" />
+												<BtnAccion onClick={() => abrirEditar(up)} Icono={Pencil} titulo="Editar" />
 												<BtnAccion
-													onClick={() => setAEliminar(p)}
+													onClick={() => setAEliminar(up)}
 													Icono={Trash2}
 													titulo="Eliminar"
 													colorHover="hover:text-red-400"
@@ -291,8 +291,8 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 			{/* Modal confirmación eliminar */}
 			{aEliminar && (
 				<ModalConfirmacion
-					titulo="¿Eliminar parqueo?"
-					mensaje={`Se eliminará el parqueo "${aEliminar.NUMERO_PARQUEO}" de forma permanente.`}
+					titulo="¿Eliminar vinculo de propiedad?"
+					mensaje={`Se eliminará el vinculo "${aEliminar.ID_USUARIO_PROPIEDAD}" de forma permanente.`}
 					onConfirmar={confirmarEliminar}
 					onCancelar={() => setAEliminar(null)}
 				/>

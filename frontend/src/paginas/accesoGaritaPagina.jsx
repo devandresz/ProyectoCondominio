@@ -288,7 +288,7 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar parqueo?"
-					mensaje={`Se eliminará el registro "${aEliminar.ID_INVITACION}" de forma permanente.`}
+					mensaje={`Se eliminará la invitación "${aEliminar.ID_INVITACION}" de forma permanente.`}
 					onConfirmar={confirmarEliminar}
 					onCancelar={() => setAEliminar(null)}
 				/>
