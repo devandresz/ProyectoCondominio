@@ -45,18 +45,6 @@ Authorization: Bearer <token>
 | PUT    | `/pagos/:id` | Actualizar     |
 | DELETE | `/pagos/:id` | Eliminar       |
 
-## 💳 Pagos
-
-**Base:** `/pagos`
-
-| Método | Endpoint     | Descripción    |
-| ------ | ------------ | -------------- |
-| GET    | `/pagos`     | Obtener todos  |
-| GET    | `/pagos/:id` | Obtener por ID |
-| POST   | `/pagos`     | Crear          |
-| PUT    | `/pagos/:id` | Actualizar     |
-| DELETE | `/pagos/:id` | Eliminar       |
-
 ## ⚠️ Llamados de Atención
 
 **Base:** `/llamadasAtencion`

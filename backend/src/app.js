@@ -14,9 +14,7 @@ import { middlewareCors } from './middlewares/cors.js';
 import { PORT } from './config/config.js';
 import { enrutadorCargosFinancieros } from './routes/cargosFinancieros.js';
 import { enrutadorAreasSociales } from './routes/areasSociales.js';
-import { enrutadorMultas } from './routes/multas.js';
-
-
+// import { enrutadorMultas } from './routes/multas.js';
 
 const aplicacion = express();
 // Middlewares
@@ -35,10 +33,9 @@ aplicacion.use('/tipos-cargo', enrutadorTiposCargo);
 aplicacion.use('/cargos-financieros', enrutadorCargosFinancieros);
 aplicacion.use('/areas-sociales', enrutadorAreasSociales);
 aplicacion.use('/usuarioPropiedad', enrutadorUsuarioPropiedad);
-aplicacion.use('/multas', enrutadorMultas);
+// aplicacion.use('/multas', enrutadorMultas);
 aplicacion.use('/reservas', enrutadorReservas);
 aplicacion.use('/pagos', enrutadorPagos);
-
 
 if (process.env.NODE_ENV !== 'test') {
 	aplicacion.listen(PORT, () => {
