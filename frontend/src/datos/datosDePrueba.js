@@ -255,6 +255,12 @@ export const GRUPOS = [
 				propio: true,
 				roles: ['Administrador', 'Guardia', 'Residente'],
 			},
+			{
+				id: 'Propietarios e Inquilinos',
+				Icono: Users,
+				propio: true,
+				roles: ['Administrador', 'Guardia'],
+			},
 		],
 	},
 	{
@@ -310,6 +316,18 @@ export const GRUPOS = [
 				propio: true,
 				roles: ['Administrador', 'Guardia', 'Residente'],
 			},
+			{
+				id: 'Tipos de Cargo',
+				Icono: Layers,
+				propio: true,
+				roles: ['Administrador'],
+			},
+			{
+ 				 id: 'Cargos Financieros',
+  				Icono: CreditCard,
+  				roles: ['Administrador'],
+  				propio: true	
+			}
 		],
 	},
 	{

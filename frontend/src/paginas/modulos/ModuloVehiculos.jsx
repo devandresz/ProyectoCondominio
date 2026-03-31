@@ -20,8 +20,6 @@ import {
 import {
 	propiedadesEjemplo,
 	vehiculosEjemplo,
-	invitacionesEjemplo,
-	multasEjemplo,
 	limpiarBusqueda,
 	colorVehiculo,
 } from '../../datos/datosDePrueba.js';

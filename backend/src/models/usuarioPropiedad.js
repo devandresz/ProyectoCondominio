@@ -1,40 +1,42 @@
 import oracledb from 'oracledb';
 import { conectar } from '../config/db.js';
 
+const consultaBase = `
+  SELECT
+    ID_USUARIO_PROPIEDAD,
+    ID_USUARIO,
+    ID_PROPIEDAD,
+    TIPO_VINCULO,
+    FECHA_INICIO,
+    FECHA_FIN,
+    ACTIVO
+    FROM USUARIO_PROPIEDAD
+`;
+
 export class UsuarioPropiedadModel {
-	static async obtenerTodas() {
+	static async obtenerTodos() {
 		const conexion = await conectar();
 		try {
-			const resultado = await conexion.execute(
-				`SELECT 
-                    up.ID_USUARIO_PROPIEDAD, 
-                    up.ID_USUARIO, 
-                    u.NOMBRE || ' ' || u.APELLIDO AS USUARIO_NOMBRE,
-                    up.ID_PROPIEDAD, 
-                    p.NUMERO_PROPIEDAD AS PROPIEDAD_NUMERO,
-                    up.TIPO_VINCULO, 
-                    up.FECHA_INICIO, 
-                    up.FECHA_FIN, 
-                    up.ACTIVO
-                 FROM USUARIO_PROPIEDAD up
-                 JOIN USUARIO u ON up.ID_USUARIO = u.ID_USUARIO
-                 JOIN PROPIEDAD p ON up.ID_PROPIEDAD = p.ID_PROPIEDAD
-                 ORDER BY p.NUMERO_PROPIEDAD, up.TIPO_VINCULO`,
-				{},
-				{ outFormat: oracledb.OUT_FORMAT_OBJECT },
-			);
+			const parametros = {};
+
+			const resultado = await conexion.execute(consultaBase, parametros, {
+				outFormat: oracledb.OUT_FORMAT_OBJECT,
+			});
 			return resultado.rows;
+		} catch (error) {
+			console.error('Error al obtener todos los parqueos:', error);
+			throw error;
 		} finally {
 			await conexion.close();
 		}
 	}
 
-	static async obtenerPorId({ id }) {
+	static async obtenerPorNumero({ numero }) {
 		const conexion = await conectar();
 		try {
 			const resultado = await conexion.execute(
-				`SELECT * FROM USUARIO_PROPIEDAD WHERE ID_USUARIO_PROPIEDAD = :id`,
-				{ id },
+				consultaBase + ' WHERE ID_USUARIO_PROPIEDAD = :numero',
+				{ numero },
 				{ outFormat: oracledb.OUT_FORMAT_OBJECT },
 			);
 			return resultado.rows[0] ?? null;
@@ -46,21 +48,24 @@ export class UsuarioPropiedadModel {
 	static async crear({ datos }) {
 		const conexion = await conectar();
 		try {
-			const { idUsuario, idPropiedad, tipoVinculo, activo = 1 } = datos;
+			const { idUsuario, idPropiedad, tipoVinculo, fechaFin } = datos;
 			const resultado = await conexion.execute(
-				`INSERT INTO USUARIO_PROPIEDAD (ID_USUARIO, ID_PROPIEDAD, TIPO_VINCULO, ACTIVO) 
-                 VALUES (:idUsuario, :idPropiedad, :tipoVinculo, :activo) 
-                 RETURNING ID_USUARIO_PROPIEDAD INTO :idUp`,
+				`INSERT INTO USUARIO_PROPIEDAD
+                (ID_USUARIO, ID_PROPIEDAD, TIPO_VINCULO, FECHA_FIN) 
+                VALUES
+                (:idUsuario, :idPropiedad, :tipoVinculo, :fechaFin)
+                RETURNING ID_USUARIO_PROPIEDAD INTO :idUsuarioPropiedad`,
 				{
-					idUsuario: Number(idUsuario),
-					idPropiedad: Number(idPropiedad),
+					idUsuario,
+					idPropiedad,
 					tipoVinculo,
-					activo,
-					idUp: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT },
+					fechaFin,
+					idUsuarioPropiedad: { type: oracledb.NUMBER, dir: oracledb.BIND_OUT },
 				},
 				{ autoCommit: true },
 			);
-			return this.obtenerPorId({ id: resultado.outBinds.idUp[0] });
+			const nuevoId = resultado.outBinds.idUsuarioPropiedad[0];
+			return UsuarioPropiedadModel.obtenerPorNumero({ numero: nuevoId });
 		} finally {
 			await conexion.close();
 		}
@@ -69,20 +74,22 @@ export class UsuarioPropiedadModel {
 	static async actualizar({ id, datos }) {
 		const conexion = await conectar();
 		try {
-			// Permitimos cambiar el usuario o inactivar el vínculo
-			const campos = {
+			const camposPermitidos = {
 				idUsuario: 'ID_USUARIO',
+				idPropiedad: 'ID_PROPIEDAD',
 				tipoVinculo: 'TIPO_VINCULO',
-				activo: 'ACTIVO',
+				fechaFin: 'FECHA_FIN',
 			};
 
 			const setCampos = [];
 			const parametros = { id };
 
-			for (const [key, columna] of Object.entries(campos)) {
-				if (datos[key] !== undefined) {
-					setCampos.push(`${columna} = :${key}`);
-					parametros[key] = key === 'idUsuario' ? Number(datos[key]) : datos[key];
+			for (const [claveCamel, columnaOracle] of Object.entries(camposPermitidos)) {
+				if (datos[claveCamel] !== undefined) {
+					setCampos.push(`${columnaOracle} = :${claveCamel}`);
+					const esFecha = claveCamel.startsWith('fecha');
+					parametros[claveCamel] =
+						esFecha && datos[claveCamel] ? new Date(datos[claveCamel]) : datos[claveCamel];
 				}
 			}
 
@@ -93,7 +100,8 @@ export class UsuarioPropiedadModel {
 				parametros,
 				{ autoCommit: true },
 			);
-			return this.obtenerPorId({ id });
+
+			return UsuarioPropiedadModel.obtenerPorNumero({ numero: id });
 		} finally {
 			await conexion.close();
 		}

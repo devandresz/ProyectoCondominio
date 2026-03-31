@@ -1,0 +1,307 @@
+import { useState, useEffect } from 'react';
+import {
+	Plus,
+	Eye,
+	Pencil,
+	Trash2,
+	Ticket,
+	Clock,
+	CheckCircle,
+	XCircle,
+	History,
+	CarFront,
+} from 'lucide-react';
+import { useParqueos } from '../hooks/useParqueo.js';
+import { usuariosApi } from '../api/usuariosApi.js';
+import { TarjetaMetrica, Etiqueta } from '../componentes/ui/Etiquetas.jsx';
+import { BuscadorCasa } from '../componentes/ui/Buscador.jsx';
+import { BtnPrimario, BtnAccion, BotonesModal } from '../componentes/ui/Botones.jsx';
+import { CabeceraTabla, Fila, Celda, PieTabla } from '../componentes/ui/Tablas.jsx';
+import { Modal, ModalConfirmacion } from '../componentes/ui/Modales.jsx';
+import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
+import { extraerError } from '../utilidades/extraerError.js';
+import useStore from '../estado/useStore.js';
+
+const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
+
+export default function ParqueosPagina({ filtroGlobal = '' }) {
+	const usuario = useStore((s) => s.usuario);
+	const esAdmin = usuario?.ROL === 'Administrador';
+
+	const { parqueos, cargando, error, crear, actualizar, eliminar } = useParqueos();
+
+	const [busqueda, setBusqueda] = useState('');
+	const [modal, setModal] = useState(null);
+	const [filaActiva, setFilaActiva] = useState(null);
+	const [seleccion, setSeleccion] = useState(null);
+	const [aEliminar, setAEliminar] = useState(null);
+	const [errorModal, setErrorModal] = useState('');
+	const [personal, setPersonal] = useState([]);
+
+	// Cargar guardias y colaboradores activos al montar
+	useEffect(() => {
+		usuariosApi
+			.obtenerTodos()
+			.then((res) => {
+				const filtrados = res.data.filter(
+					(u) => (u.ROL === 'Guardia' || u.ROL === 'Colaborador') && u.ACTIVO === 1,
+				);
+				setPersonal(filtrados);
+			})
+			.catch(() => setPersonal([]));
+	}, []);
+
+	const [form, setForm] = useState({
+		idPropiedad: '',
+		numeroParqueo: '',
+		descripcion: '',
+		activo: 1,
+	});
+
+	const termino = limpiar(busqueda || filtroGlobal);
+	const filtrados = termino
+		? parqueos.filter(
+				(p) =>
+					limpiar(p.NUMERO_PARQUEO).includes(termino) ||
+					limpiar(p.ACTIVO).includes(termino) ||
+					limpiar(p.ID_PARQUEO?.toString()).includes(termino),
+			)
+		: parqueos;
+
+	const abrirCrear = () => {
+		setForm({
+			idPropiedad: '',
+			numeroParqueo: '',
+			descripcion: '',
+			activo: '',
+		});
+		setErrorModal('');
+		setModal('crear');
+	};
+
+	const abrirEditar = (p) => {
+		setSeleccion(p);
+		setForm({
+			idPropiedad: p.ID_PROPIEDAD,
+			numeroParqueo: p.NUMERO_PARQUEO,
+			descripcion: p.DESCRIPCION,
+			activo: p.ACTIVO,
+		});
+		setErrorModal('');
+		setModal('editar');
+	};
+
+	const abrirVer = (p) => {
+		setSeleccion(p);
+		setModal('ver');
+	};
+
+	const guardar = async (e) => {
+		e.preventDefault();
+		setErrorModal('');
+		try {
+			const datosAEnviar = {
+				...form,
+				idPropiedad: Number(form.idPropiedad),
+				numeroParqueo: Number(form.numeroParqueo),
+				descripcion: form.descripcion,
+				activo: form.activo,
+			};
+
+			if (modal === 'crear') {
+				await crear(datosAEnviar);
+			} else {
+				await actualizar(seleccion.ID_PARQUEO, datosAEnviar);
+			}
+			setModal(null);
+		} catch (err) {
+			setErrorModal(extraerError(err));
+		}
+	};
+
+	const confirmarEliminar = async () => {
+		try {
+			await eliminar(aEliminar.ID_PARQUEO);
+		} catch (err) {
+			console.error('Error al eliminar:', extraerError(err));
+		}
+		setAEliminar(null);
+	};
+
+	if (cargando) return <div className="text-secundario text-sm p-8">Cargando parqueos...</div>;
+	if (error) return <div className="text-red-400 text-sm p-8">{error}</div>;
+
+	return (
+		<div className="space-y-6 animate-in fade-in duration-300">
+			{/* Métricas */}
+			<div className="grid grid-cols-4 gap-4">
+				<TarjetaMetrica
+					etiqueta="Total"
+					valor={parqueos.length}
+					Icono={CarFront}
+					fondo="bg-zinc-800"
+				/>
+				<TarjetaMetrica
+					etiqueta="Abiertos"
+					valor={parqueos.filter((p) => p.ACTIVO === 1).length}
+					Icono={Clock}
+					fondo="bg-sky-500/10"
+				/>
+				<TarjetaMetrica
+					etiqueta="Cerrados"
+					valor={parqueos.filter((p) => p.ACTIVO === 0).length}
+					Icono={XCircle}
+					fondo="bg-zinc-500/10"
+				/>
+			</div>
+
+			{/* Tabla */}
+			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
+				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
+					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
+					{esAdmin && (
+						<BtnPrimario onClick={abrirCrear}>
+							<Plus className="w-4 h-4" /> Nuevo Parqueo
+						</BtnPrimario>
+					)}
+				</div>
+				<table className="w-full">
+					<CabeceraTabla
+						columnas={['#', 'No. Parqueo', 'Descripción', 'Propiedad', 'Estado', 'Acciones']}
+					/>
+					<tbody>
+						{filtrados.map((p) => (
+							<Fila
+								key={p.ID_PARQUEO}
+								seleccionada={filaActiva === p.ID_PARQUEO}
+								onClick={() => setFilaActiva(filaActiva === p.ID_PARQUEO ? null : p.ID_PARQUEO)}
+							>
+								<Celda mono>{p.ID_PARQUEO}</Celda>
+								<Celda>{p.NUMERO_PARQUEO}</Celda>
+								<Celda>{p.DESCRIPCION}</Celda>
+								<Celda>{p.NUMERO_PROPIEDAD}</Celda>
+								<Celda>
+									<Etiqueta texto={p.ACTIVO === 1 ? 'ACTIVO' : 'INACTIVO'} />
+								</Celda>
+								<td className="px-4 py-3">
+									<div className="flex items-center gap-1">
+										<BtnAccion onClick={() => abrirVer(p)} Icono={Eye} titulo="Ver" />
+										{esAdmin && (
+											<>
+												<BtnAccion onClick={() => abrirEditar(p)} Icono={Pencil} titulo="Editar" />
+												<BtnAccion
+													onClick={() => setAEliminar(p)}
+													Icono={Trash2}
+													titulo="Eliminar"
+													colorHover="hover:text-red-400"
+												/>
+											</>
+										)}
+									</div>
+								</td>
+							</Fila>
+						))}
+					</tbody>
+				</table>
+				<PieTabla mostrados={filtrados.length} total={parqueos.length} unidad="parqueos" />
+			</div>
+
+			{/* Modal crear/editar */}
+			{(modal === 'crear' || modal === 'editar') && (
+				<Modal
+					titulo={modal === 'crear' ? 'Nuevo Parqueo' : 'Editar Parqueo'}
+					alCerrar={() => setModal(null)}
+				>
+					<form onSubmit={guardar} className="space-y-4">
+						<div className="grid grid-cols-2 gap-4">
+							<Campo etiqueta="Propiedad">
+								<Selector
+									required
+									value={form.idPropiedad}
+									onChange={(e) => setForm({ ...form, idPropiedad: e.target.value })}
+								>
+									<option value="">Seleccionar...</option>
+									{personal.map((u) => (
+										<option key={u.ID_USUARIO} value={u.ID_USUARIO}>
+											{u.NOMBRE_USUARIO} — {u.NOMBRE} {u.APELLIDO} ({u.ROL})
+										</option>
+									))}
+								</Selector>
+							</Campo>
+							<Campo etiqueta="Numero de parqueo">
+								<input
+									type="text"
+									required
+									value={form.numeroParqueo}
+									onChange={(e) => setForm({ ...form, numeroParqueo: e.target.value })}
+									placeholder="Detalle del parqueo"
+									className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+								/>
+							</Campo>
+						</div>
+						<Campo etiqueta="Descripción">
+							<textarea
+								required
+								value={form.descripcion}
+								onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+								placeholder="Detalle del parqueo"
+								rows={3}
+								className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+							/>
+						</Campo>
+						<Campo etiqueta="Estado">
+							<input
+								required
+								type="radio"
+								value={'Activo'}
+								onChange={(e) => setForm({ ...form, activo: e.target.value })}
+								checked
+							/>
+							<input
+								required
+								type="radio"
+								value={'Inactivo'}
+								onChange={(e) => setForm({ ...form, activo: e.target.value })}
+							/>
+						</Campo>
+						{errorModal && <p className="text-red-400 text-xs">{errorModal}</p>}
+						<BotonesModal
+							alCancelar={() => setModal(null)}
+							textoGuardar={modal === 'crear' ? 'Crear' : 'Guardar'}
+						/>
+					</form>
+				</Modal>
+			)}
+
+			{/* Modal ver */}
+			{modal === 'ver' && seleccion && (
+				<Modal titulo="Detalle del Parqueo" alCerrar={() => setModal(null)}>
+					<div className="space-y-3 text-sm">
+						{[
+							['#', seleccion.ID_PARQUEO],
+							['No. Parqueo', seleccion.NUMERO_PARQUEO],
+							['No. Propiedad', seleccion.NUMERO_PROPIEDAD],
+							['Descripcion', seleccion.DESCRIPCION],
+							['Estado', seleccion.ACTIVO],
+						].map(([lbl, val]) => (
+							<div key={lbl} className="flex justify-between border-b border-borde pb-2">
+								<span className="text-secundario">{lbl}</span>
+								<span className="text-primario font-medium">{val}</span>
+							</div>
+						))}
+					</div>
+				</Modal>
+			)}
+
+			{/* Modal confirmación eliminar */}
+			{aEliminar && (
+				<ModalConfirmacion
+					titulo="¿Eliminar parqueo?"
+					mensaje={`Se eliminará el parqueo "${aEliminar.NUMERO_PARQUEO}" de forma permanente.`}
+					onConfirmar={confirmarEliminar}
+					onCancelar={() => setAEliminar(null)}
+				/>
+			)}
+		</div>
+	);
+}

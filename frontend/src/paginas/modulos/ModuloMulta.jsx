@@ -1,29 +1,9 @@
 import { useState } from 'react';
-import {
-	Building,
-	CheckCircle,
-	Users,
-	Plus,
-	Eye,
-	Pencil,
-	Ban,
-	Trash2,
-	Car,
-	Tag,
-	RefreshCw,
-	QrCode,
-	Clock,
-	Save,
-	AlertTriangle,
-	Zap,
-} from 'lucide-react';
+import { CheckCircle, Plus, Pencil, Trash2, AlertTriangle, Zap } from 'lucide-react';
 import {
 	propiedadesEjemplo,
-	vehiculosEjemplo,
-	invitacionesEjemplo,
 	multasEjemplo,
 	limpiarBusqueda,
-	colorVehiculo,
 } from '../../datos/datosDePrueba.js';
 import { TarjetaMetrica, Etiqueta } from '../../componentes/ui/Etiquetas.jsx';
 import { BuscadorCasa } from '../../componentes/ui/Buscador.jsx';

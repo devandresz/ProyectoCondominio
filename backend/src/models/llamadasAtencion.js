@@ -50,7 +50,7 @@ export class LlamadasAtencionModel {
 		try {
 			const parametros = {};
 			const resultado = await conexion.execute(
-				'SELECT COUNT(la.ID_PROPIEDAD) AS cantidad, la.ID_PROPIEDAD, la.ID_TIPO_CARGO FROM LLAMADO_ATENCION la GROUP BY la.ID_TIPO_CARGO, la.ID_PROPIEDAD',
+				'SELECT COUNT(p.NUMERO_PROPIEDAD) AS cantidad, p.NUMERO_PROPIEDAD, tc.DESCRIPCION, la.ID_PROPIEDAD, la.ID_TIPO_CARGO FROM LLAMADO_ATENCION la JOIN PROPIEDAD p ON la.ID_PROPIEDAD = p.ID_PROPIEDAD JOIN TIPO_CARGO tc ON la.ID_TIPO_CARGO = tc.ID_TIPO_CARGO GROUP BY p.NUMERO_PROPIEDAD, tc.DESCRIPCION, la.ID_PROPIEDAD, la.ID_TIPO_CARGO',
 				parametros,
 				{
 					outFormat: oracledb.OUT_FORMAT_OBJECT,

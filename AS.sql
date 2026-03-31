@@ -335,13 +335,25 @@ CREATE TABLE PAGO_DETALLE (
     CONSTRAINT chk_pd_monto CHECK (monto_aplicado > 0)
 );
 
--- Trigger: valida que el usuario esté vinculado a la propiedad del pago (RN-F4)
 CREATE OR REPLACE TRIGGER trg_pago_usuario_vinculado
 BEFORE INSERT ON PAGO
 FOR EACH ROW
 DECLARE
     v_count NUMBER;
+    v_rol   VARCHAR2(50);
 BEGIN
+    -- Obtener rol del usuario
+    SELECT R.NOMBRE INTO v_rol
+    FROM USUARIO U
+    JOIN ROL R ON U.ID_ROL = R.ID_ROL
+    WHERE U.ID_USUARIO = :NEW.id_usuario;
+
+    -- Admin puede pagar cualquier propiedad
+    IF v_rol = 'Administrador' THEN
+        RETURN;
+    END IF;
+
+    -- RN-F4: Residente debe estar vinculado
     SELECT COUNT(*) INTO v_count
     FROM USUARIO_PROPIEDAD
     WHERE id_usuario   = :NEW.id_usuario
@@ -353,7 +365,6 @@ BEGIN
             'RN-F4: Solo usuarios vinculados a la propiedad pueden registrar pagos.');
     END IF;
 END;
-/
 
 -- Trigger: valida que el pago incluya TODOS los cargos pendientes ANTES de insertar (RN-F7)
 -- Se ejecuta BEFORE para evitar el bug de leer cargos ya marcados como PAGADO
@@ -381,6 +392,7 @@ BEGIN
     END IF;
 END;
 /
+ALTER TRIGGER trg_pago_todos_los_cargos DISABLE;
 
 -- Trigger: al registrar detalle de pago marca el cargo como PAGADO
 CREATE OR REPLACE TRIGGER trg_cargo_pagado

@@ -1,78 +1,85 @@
-# 🏢 Sistema de Gestión de Condominio
+# 🏢 Sistema de Gestión de Condominios
 
-## 📌 Descripción
-
-Este proyecto consiste en el desarrollo de un **Sistema de Gestión de Condominio**, diseñado para facilitar la administración de residenciales o edificios, permitiendo llevar un control organizado de residentes, pagos, mantenimiento, comunicados y demás procesos administrativos.
-
-El sistema estará dividido en **frontend** y **backend**, comunicados mediante una **API REST**, siguiendo el patrón de arquitectura **MVC (Modelo - Vista - Controlador)** para garantizar una estructura ordenada, escalable y mantenible.
-
-Actualmente el proyecto se encuentra en fase inicial de desarrollo.
+Sistema web para la administración integral de condominios, desarrollado con arquitectura cliente-servidor. Permite gestionar usuarios, pagos, reservas, accesos y control interno del condominio de forma eficiente.
 
 ---
 
-## 🚀 Tecnologías a utilizar
+## 🚀 Tecnologías utilizadas
 
 ### 🖥️ Frontend
 
-- **React** (con Vite como herramienta de desarrollo)
-- Consumo de API REST
-- Interfaz moderna y responsiva
+- React
+- Vite
+- JavaScript
+- CSS
 
 ### ⚙️ Backend
 
-- **Node.js**
-- **Express**
-- Arquitectura MVC
-- Exposición de API REST para comunicación con el frontend
+- Node.js
+- Express
 
-### 🗄️ Base de Datos
+### 🗄️ Base de datos
 
-- **Oracle Database**
-- Manejo estructurado de información crítica como:
-  - Residentes
-  - Pagos
-  - Cuotas
-  - Mantenimiento
-  - Reportes
-  - Usuarios y roles
+- Oracle Database
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## 📌 Características principales
 
-El sistema estará organizado bajo el patrón **MVC**:
-
-- **Modelo (Model):**  
-  Encargado de la lógica de datos y conexión con la base de datos Oracle.
-
-- **Vista (View):**  
-  Representada por el frontend en React.
-
-- **Controlador (Controller):**  
-  Gestiona las peticiones HTTP, valida datos y conecta el frontend con la base de datos a través de la API.
-
-La comunicación entre frontend y backend se realizará mediante peticiones HTTP (GET, POST, PUT, DELETE) a través de una API REST.
+- Gestión de usuarios (Residente, Administrador, Guardia)
+- CRUD completo de entidades principales
+- Registro y control de pagos mensuales
+- Generación automática de moras
+- Registro de llamados de atención
+- Generación automática de multas (al acumular 3 incidencias)
+- Reserva de áreas comunes (parques, salones, piscinas, etc.)
+- Gestión de parqueos por categoría
+- Generación de invitaciones mediante código QR
+- Validación de acceso de invitados en garita
 
 ---
 
-## 🎯 Objetivo del Proyecto
+## 🧩 Módulos del sistema
 
-Desarrollar una plataforma web que permita:
+### 👤 Usuarios
 
-- Gestionar residentes
-- Administrar pagos y cuotas
-- Registrar incidencias o mantenimientos
-- Controlar accesos mediante usuarios y roles
+- Registro, edición y eliminación de usuarios
+- Asignación de roles
+
+### 💳 Pagos
+
+- Registro de pagos
+- Historial de pagos
+- Generación de mora automática
+
+### ⚠️ Incidencias
+
+- Registro de llamados de atención
+- Generación de multas
+
+### 🏊 Reservas
+
+- Reserva de áreas comunes
+- Validación de disponibilidad
+
+### 🚗 Parqueos
+
+- Asignación automática según categoría
+
+### 📱 Invitaciones QR
+
+- Generación de QR para invitados
+- Validación en garita con documento de identidad
 
 ---
 
-## 📂 Estado del Proyecto
+## 📂 Estructura del proyecto
 
-🟡 En desarrollo (fase inicial)
-
-Actualmente se está trabajando en:
-
-- Definición de estructura del proyecto
-- Configuración del entorno frontend y backend
-- Diseño inicial de la base de datos
-- Planificación de módulos principales
+```bash
+/condominio-app
+│
+├── frontend/        # Aplicación React + Vite
+├── backend/         # API REST con Node.js + Express
+├── AS.sql        # Scripts y modelos Oracle
+└── README.md
+```

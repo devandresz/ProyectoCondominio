@@ -1,6 +1,5 @@
 import oracledb from 'oracledb';
 import { conectar } from '../config/db.js';
-import { ca } from 'zod/v4/locales';
 
 const consultaBase = `
   SELECT
@@ -8,8 +7,9 @@ const consultaBase = `
     p.ID_PROPIEDAD,
     p.NUMERO_PARQUEO,
     p.DESCRIPCION,
-    p.ACTIVO
-	FROM PARQUEO p
+    p.ACTIVO,
+	pr.NUMERO_PROPIEDAD
+	FROM PARQUEO p JOIN PROPIEDAD pr ON p.ID_PROPIEDAD = pr.ID_PROPIEDAD
 `;
 
 export class ParqueoModel {

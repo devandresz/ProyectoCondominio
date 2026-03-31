@@ -8,6 +8,16 @@ node_modules/
 # Archivos de construcción
 dist/
 build/
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Logs
+logs/
+*.log
+
+# Entorno
+.env
 
 # Archivos del sistema
 .DS_Store
@@ -17,3 +27,21 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+# Cachés y builds
+/dist/
+/build/
+/coverage/
+*.cache
+
+# Archivos de editor/IDE
+.vscode/
+.idea/
+*.iml
+
+# Archivos temporales y backups
+*.swp
+*.swo
+*.bak
+*.tmp
+*.pid
+*.seed

@@ -1,12 +1,13 @@
 import 'dotenv/config';
 
 export const {
-	PORT = 1000,
-	DB_USER = 'tu_usuario',
-	DB_PASSWORD = 'tu_password',
-	DB_HOST = 'localhost',
-	DB_PORT = 1000,
-	DB_SERVICE = 'tu_servicio',
-	SALT_ROUND = 10,
-	SECRET_JWT_KEY = 'tu_clave_secreta_para_jwt',
+	PORT = PORT,
+	DB_USER = DB_USER,
+	DB_PASSWORD = DB_PASSWORD,
+	DB_HOST = DB_HOST,
+	DB_PORT = DB_PORT,
+	DB_SERVICE = DB_SERVICE,
+
+	SALT_ROUND = SALT_ROUND,
+	SECRET_JWT_KEY = SECRET_JWT_KEY,
 } = process.env;

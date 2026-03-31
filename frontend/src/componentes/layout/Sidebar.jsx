@@ -29,7 +29,7 @@ export function Sidebar({ moduloActivo, setModuloActivo }) {
 					<span
 						className={`ml-4 text-[15px] font-bold tracking-tight font-title whitespace-nowrap transition-opacity duration-300 ${hovered ? 'opacity-100' : 'opacity-0'}`}
 					>
-						Condominio PRUEBA
+						Condominio PuraFé
 					</span>
 				</div>
 
