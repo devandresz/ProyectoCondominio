@@ -5,6 +5,7 @@ export function useLlamadasAtencion() {
 	const [llamadasAtencion, setLlamadasAtencion] = useState([]);
 	const [cargando, setCargando] = useState(false);
 	const [error, setError] = useState(null);
+	const [llamadasAgrupadas, setLlamadasAgrupadas] = useState([]);
 
 	const cargar = useCallback(async () => {
 		setCargando(true);
@@ -12,6 +13,8 @@ export function useLlamadasAtencion() {
 		try {
 			const res = await llamadasAtencionApi.obtenerTodos();
 			setLlamadasAtencion(res.data);
+			const resAgrupados = await llamadasAtencionApi.obtenerTodosAgrupados();
+			setLlamadasAgrupadas(resAgrupados.data);
 		} catch (err) {
 			setError(err.response?.data?.mensaje ?? 'Error al cargar llamadasAtencion.');
 		} finally {
@@ -40,5 +43,14 @@ export function useLlamadasAtencion() {
 		setLlamadasAtencion((prev) => prev.filter((l) => l.ID_LLAMADO !== id));
 	};
 
-	return { llamadasAtencion, cargando, error, cargar, crear, actualizar, eliminar };
+	return {
+		llamadasAtencion,
+		llamadasAgrupadas,
+		cargando,
+		error,
+		cargar,
+		crear,
+		actualizar,
+		eliminar,
+	};
 }

@@ -89,7 +89,7 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 			const datosAEnviar = {
 				...form,
 				idPropiedad: Number(form.idPropiedad),
-				numeroParqueo: Number(form.numeroParqueo),
+				numeroParqueo: form.numeroParqueo,
 				descripcion: form.descripcion,
 				activo: form.activo,
 			};
@@ -128,13 +128,13 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 					fondo="bg-zinc-800"
 				/>
 				<TarjetaMetrica
-					etiqueta="Abiertos"
+					etiqueta="Activos"
 					valor={parqueos.filter((p) => p.ACTIVO === 1).length}
 					Icono={Clock}
 					fondo="bg-sky-500/10"
 				/>
 				<TarjetaMetrica
-					etiqueta="Cerrados"
+					etiqueta="Inactivos"
 					valor={parqueos.filter((p) => p.ACTIVO === 0).length}
 					Icono={XCircle}
 					fondo="bg-zinc-500/10"
@@ -167,7 +167,10 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 								<Celda>{p.DESCRIPCION}</Celda>
 								<Celda>{p.NUMERO_PROPIEDAD}</Celda>
 								<Celda>
-									<Etiqueta texto={p.ACTIVO === 1 ? 'ACTIVO' : 'INACTIVO'} />
+									<Etiqueta
+										texto={p.ACTIVO === 1 ? 'ACTIVO' : 'INACTIVO'}
+										variante={p.ACTIVO === 1 ? 'activo' : 'inactivo'}
+									/>
 								</Celda>
 								<td className="px-4 py-3">
 									<div className="flex items-center gap-1">
@@ -236,19 +239,32 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 							/>
 						</Campo>
 						<Campo etiqueta="Estado">
-							<input
-								required
-								type="radio"
-								value={'Activo'}
-								onChange={() => setForm({ ...form, activo: 1 })}
-								checked
-							/>
-							<input
-								required
-								type="radio"
-								value={'Inactivo'}
-								onChange={() => setForm({ ...form, activo: 0 })}
-							/>
+							<br />
+							<Celda>
+								<Etiqueta texto={'Activo'} variante={'activo'} />
+								<input
+									name="activo"
+									id="activo"
+									required
+									type="radio"
+									value={1}
+									onChange={() => setForm({ ...form, activo: 1 })}
+									checked={form.activo === 1}
+								/>
+							</Celda>
+
+							<Celda>
+								<Etiqueta texto={'Inactivo'} variante={'inactivo'} />
+								<input
+									name="activo"
+									id="activo"
+									required
+									type="radio"
+									value={0}
+									onChange={() => setForm({ ...form, activo: 0 })}
+									checked={form.activo === 0}
+								/>
+							</Celda>
 						</Campo>
 						{errorModal && <p className="text-red-400 text-xs">{errorModal}</p>}
 						<BotonesModal

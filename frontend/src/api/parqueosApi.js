@@ -7,7 +7,7 @@ export const parqueosApi = {
 
 	crear: (datos) => instancia.post('/parqueos', datos),
 
-	actualizar: (id, datos) => instancia.patch(`/parqueos/${id}`, datos),
+	actualizar: (id, datos) => instancia.put(`/parqueos/${id}`, datos),
 
 	eliminar: (id) => instancia.delete(`/parqueos/${id}`),
 };

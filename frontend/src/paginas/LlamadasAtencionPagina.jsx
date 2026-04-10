@@ -20,7 +20,7 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 	const usuario = useStore((s) => s.usuario);
 	const esAdmin = usuario?.ROL === 'Administrador';
 
-	const { llamadasAtencion, cargando, error, crear, actualizar, eliminar } =
+	const { llamadasAtencion, llamadasAgrupadas, cargando, error, crear, actualizar, eliminar } =
 		useLlamadasAtencion();
 
 	const [busqueda, setBusqueda] = useState('');
@@ -31,6 +31,7 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 	const [errorModal, setErrorModal] = useState('');
 	const [propiedades, setPropiedades] = useState([]);
 	const [cargos, setCargos] = useState([]);
+	const [estadoLista, setEstadoLista] = useState(false);
 
 	// Cargar guardias y colaboradores activos al montar
 	useEffect(() => {
@@ -142,6 +143,9 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
+					<BtnPrimario onClick={() => setEstadoLista(!estadoLista)}>
+						{estadoLista ? 'Ver detalles' : 'Agrupar conteo'}
+					</BtnPrimario>
 					{esAdmin && (
 						<BtnPrimario onClick={abrirCrear}>
 							<Plus className="w-4 h-4" /> Nueva llamada de atención
@@ -149,36 +153,60 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 					)}
 				</div>
 				<table className="w-full">
-					<CabeceraTabla columnas={['#', 'Cargo', 'Descripción', 'Fecha', 'Acciones']} />
+					<CabeceraTabla
+						columnas={
+							!estadoLista
+								? ['#', 'Nombre', 'Descripción', 'Fecha', 'Acciones']
+								: ['#', 'Propiedad', 'Descripción', 'Cantidad', 'Acciones']
+						}
+					/>
 					<tbody>
-						{filtrados.map((la, index) => (
-							<Fila
-								key={la.ID_LLAMADO}
-								seleccionada={filaActiva === la.ID_LLAMADO}
-								onClick={() => setFilaActiva(filaActiva === la.ID_LLAMADO ? null : la.ID_LLAMADO)}
-							>
-								<Celda mono>{index + 1}</Celda>
-								<Celda>{la.NOMBRE}</Celda>
-								<Celda>{la.DESCRIPCION}</Celda>
-								<Celda>{formatearFecha(la.FECHA_EMISION)}</Celda>
-								<td className="px-4 py-3">
-									<div className="flex items-center gap-1">
-										<BtnAccion onClick={() => abrirVer(la)} Icono={Eye} titulo="Ver" />
-										{esAdmin && (
-											<>
-												<BtnAccion onClick={() => abrirEditar(la)} Icono={Pencil} titulo="Editar" />
-												<BtnAccion
-													onClick={() => setAEliminar(la)}
-													Icono={Trash2}
-													titulo="Eliminar"
-													colorHover="hover:text-red-400"
-												/>
-											</>
-										)}
-									</div>
-								</td>
-							</Fila>
-						))}
+						{!estadoLista
+							? filtrados.map((la, index) => (
+									<Fila
+										key={la.ID_LLAMADO}
+										seleccionada={filaActiva === la.ID_LLAMADO}
+										onClick={() => setFilaActiva(filaActiva === la.ID_LLAMADO ? null : la.ID_LLAMADO)}
+									>
+										<Celda mono>{index + 1}</Celda>
+										<Celda>{la.NOMBRE}</Celda>
+										<Celda>{la.DESCRIPCION}</Celda>
+										<Celda>{formatearFecha(la.FECHA_EMISION)}</Celda>
+										<td className="px-4 py-3">
+											<div className="flex items-center gap-1">
+												<BtnAccion onClick={() => abrirVer(la)} Icono={Eye} titulo="Ver" />
+												{esAdmin && (
+													<>
+														<BtnAccion onClick={() => abrirEditar(la)} Icono={Pencil} titulo="Editar" />
+														<BtnAccion
+															onClick={() => setAEliminar(la)}
+															Icono={Trash2}
+															titulo="Eliminar"
+															colorHover="hover:text-red-400"
+														/>
+													</>
+												)}
+											</div>
+										</td>
+									</Fila>
+								))
+							: llamadasAgrupadas.map((la, index) => (
+									<Fila
+										key={la.ID_LLAMADO}
+										seleccionada={filaActiva === la.ID_LLAMADO}
+										onClick={() => setFilaActiva(filaActiva === la.ID_LLAMADO ? null : la.ID_LLAMADO)}
+									>
+										<Celda mono>{index + 1}</Celda>
+										<Celda>{la.NUMERO_PROPIEDAD}</Celda>
+										<Celda>{la.DESCRIPCION}</Celda>
+										<Celda>{la.CANTIDAD}</Celda>
+										<td className="px-4 py-3">
+											<div className="flex items-center gap-1">
+												<BtnAccion onClick={() => abrirVer(la)} Icono={Eye} titulo="Ver" />
+											</div>
+										</td>
+									</Fila>
+								))}
 					</tbody>
 				</table>
 				<PieTabla mostrados={filtrados.length} total={llamadasAtencion.length} unidad="llamados" />
@@ -213,11 +241,14 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 									onChange={(e) => setForm({ ...form, idTipoCargo: Number(e.target.value) })}
 								>
 									<option value="">Seleccionar...</option>
-									{cargos.map((c) => (
-										<option key={c.ID_TIPO_CARGO} value={c.ID_TIPO_CARGO}>
-											{c.NOMBRE}
-										</option>
-									))}
+									{cargos.map(
+										(c) =>
+											c.NOMBRE.includes('Multa') && (
+												<option key={c.ID_TIPO_CARGO} value={c.ID_TIPO_CARGO}>
+													{c.NOMBRE}
+												</option>
+											),
+									)}
 								</Selector>
 							</Campo>
 						</div>

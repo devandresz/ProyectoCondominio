@@ -34,7 +34,6 @@ const SUBTITULOS = {
 	'Vinculación Usuario-Propiedad': 'Control de propietarios e inquilinos por unidad',
 	'Directorio Residentes': 'Gestión de usuarios del sistema',
 	'Pases de Visita (QR)': 'Generación de códigos de acceso temporales',
-	'Infracciones y Multas': 'Bitácora de faltas y control de sanciones',
 	'Mesa de Ayuda': 'Gestión de tickets asignados al personal',
 	'Tipos de Cargo': 'Catálogo de conceptos financieros, cargos dinámicos y multas',
 	'Cargos Financieros': 'Consulta de estado de cuenta por propiedad y cuotas mensuales',
@@ -42,8 +41,8 @@ const SUBTITULOS = {
 	'Reservas de Áreas': 'Calendario y gestión de áreas sociales',
 	'Inventario Parqueos': 'Inventario de parqueos disponibles',
 	'Llamados de Atención': 'Listado de llamadas de atención acumuladas',
-	'Bitácora de Seguridad': 'Bitácora y registro de las personas que han ingresado.',
 	'Propietarios e Inquilinos': 'Control de inquilinos y propietarios',
+	'Bitácora de Seguridad': 'Bitácora y registro de las personas que han ingresado.',
 };
 
 export default function LayoutPrincipal() {
@@ -66,6 +65,7 @@ export default function LayoutPrincipal() {
 		'Inventario Parqueos': <ParqueosPagina filtroGlobal={busquedaGlobal} />,
 		'Llamados de Atención': <LlamadasAtencionPagina filtroGlobal={busquedaGlobal} />,
 		'Propietarios e Inquilinos': <UsuarioPropiedadPagina filtroGlobal={busquedaGlobal} />,
+		'Bitácora de Seguridad': <AccesoGaritaPagina filtroGlobal={busquedaGlobal} />,
 	};
 
 	const infoModulo = GRUPOS.flatMap((g) => g.modulos).find((m) => m.id === moduloActivo);

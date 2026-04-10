@@ -66,35 +66,35 @@ import {
 // ];
 
 // ─── MULTAS ────────────────────────────────────────────────────────────────
-export const multasEjemplo = [
-	{
-		id: 1,
-		propiedad: 'A-101',
-		residente: 'Carlos Méndez',
-		infraccion: 'Ruido nocturno',
-		llamados: 3,
-		estado: 'PENDIENTE',
-		fecha: '2025-07-01',
-	},
-	{
-		id: 2,
-		propiedad: 'B-205',
-		residente: 'Laura Cifuentes',
-		infraccion: 'Mascotas sin bozal',
-		llamados: 3,
-		estado: 'PAGADO',
-		fecha: '2025-06-15',
-	},
-	{
-		id: 3,
-		propiedad: 'C-310',
-		residente: 'Roberto Lima',
-		infraccion: 'Basura fuera de hora',
-		llamados: 6,
-		estado: 'PENDIENTE',
-		fecha: '2025-07-08',
-	},
-];
+// export const multasEjemplo = [
+// 	{
+// 		id: 1,
+// 		propiedad: 'A-101',
+// 		residente: 'Carlos Méndez',
+// 		infraccion: 'Ruido nocturno',
+// 		llamados: 3,
+// 		estado: 'PENDIENTE',
+// 		fecha: '2025-07-01',
+// 	},
+// 	{
+// 		id: 2,
+// 		propiedad: 'B-205',
+// 		residente: 'Laura Cifuentes',
+// 		infraccion: 'Mascotas sin bozal',
+// 		llamados: 3,
+// 		estado: 'PAGADO',
+// 		fecha: '2025-06-15',
+// 	},
+// 	{
+// 		id: 3,
+// 		propiedad: 'C-310',
+// 		residente: 'Roberto Lima',
+// 		infraccion: 'Basura fuera de hora',
+// 		llamados: 6,
+// 		estado: 'PENDIENTE',
+// 		fecha: '2025-07-08',
+// 	},
+// ];
 
 // ─── NOTIFICACIONES ────────────────────────────────────────────────────────
 // export const notificacionesEjemplo = [
@@ -164,12 +164,6 @@ export const GRUPOS = [
 		IconoGrupo: ShieldAlert,
 		modulos: [
 			{
-				id: 'Punto de Ingreso',
-				Icono: ShieldCheck,
-				propio: true,
-				roles: ['Administrador', 'Guardia'],
-			},
-			{
 				id: 'Bitácora de Seguridad',
 				Icono: BookOpen,
 				propio: true,
@@ -180,12 +174,6 @@ export const GRUPOS = [
 				Icono: ParkingCircle,
 				propio: true,
 				roles: ['Administrador', 'Guardia'],
-			},
-			{
-				id: 'Asignación de Espacios',
-				Icono: ArrowLeftRight,
-				propio: true,
-				roles: ['Administrador'],
 			},
 		],
 	},
@@ -198,19 +186,6 @@ export const GRUPOS = [
 				Icono: CreditCard,
 				propio: true,
 				roles: ['Administrador', 'Residente'],
-			},
-			{ id: 'Historial Financiero', Icono: Zap, propio: true, roles: ['Administrador'] },
-			{
-				id: 'Llamados de Atención',
-				Icono: PhoneCall,
-				propio: true,
-				roles: ['Administrador', 'Guardia'],
-			},
-			{
-				id: 'Infracciones y Multas',
-				Icono: AlertTriangle,
-				propio: true,
-				roles: ['Administrador', 'Guardia', 'Residente'],
 			},
 			{
 				id: 'Tipos de Cargo',
@@ -230,7 +205,6 @@ export const GRUPOS = [
 		titulo: 'Operaciones & Soporte',
 		IconoGrupo: Briefcase,
 		modulos: [
-			{ id: 'Mantenimiento de Áreas', Icono: Trees, propio: true, roles: ['Administrador'] },
 			{
 				id: 'Reservas de Áreas',
 				Icono: CalendarDays,
@@ -243,7 +217,6 @@ export const GRUPOS = [
 				propio: true,
 				roles: ['Administrador', 'Residente'],
 			},
-			{ id: 'Catálogos del Sistema', Icono: Layers, propio: true, roles: ['Administrador'] },
 		],
 	},
 ];

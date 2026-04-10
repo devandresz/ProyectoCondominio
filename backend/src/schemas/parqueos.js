@@ -29,8 +29,7 @@ const esquemaParqueo = z.object({
 			required_error: 'La propiedad activa es requerida.',
 			invalid_type_error: 'La propiedad activa debe ser un número.',
 		})
-		.int()
-		.positive(),
+		.int(),
 });
 
 export function validarParqueo(entrada) {

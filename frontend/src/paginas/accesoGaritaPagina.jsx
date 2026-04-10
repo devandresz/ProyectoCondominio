@@ -37,7 +37,7 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 	const [seleccion, setSeleccion] = useState(null);
 	const [aEliminar, setAEliminar] = useState(null);
 	const [errorModal, setErrorModal] = useState('');
-
+	console.log(error);
 	// Cargar guardias y colaboradores activos al montar
 
 	const [form, setForm] = useState({
@@ -137,7 +137,7 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 					fondo="bg-zinc-500/10"
 				/>
 			</div>
-
+			{console.log(accesoGarita)}
 			{/* Tabla */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
@@ -147,7 +147,6 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 					<CabeceraTabla
 						columnas={[
 							'#',
-							'No. Invitacion',
 							'Tipo Documento',
 							'No. Documento',
 							'Nombre',
@@ -155,7 +154,6 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 							'Hora de ingreso',
 							'Fecha expiración',
 							'Estado',
-							'Acciones',
 						]}
 					/>
 					<tbody>
@@ -166,7 +164,6 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 								onClick={() => setFilaActiva(filaActiva === ag.ID_ACCESO ? null : ag.ID_ACCESO)}
 							>
 								<Celda mono>{ag.ID_ACCESO}</Celda>
-								<Celda>{ag.ID_INVITACION}</Celda>
 								<Celda>{ag.TIPO_DOCUMENTO}</Celda>
 								<Celda>{ag.NUMERO_DOCUMENTO}</Celda>
 								<Celda>{ag.NOMBRE_COMPLETO_REAL}</Celda>
@@ -176,22 +173,6 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 								<Celda>
 									<Etiqueta texto={ag.ACTIVO === 1 ? 'ACTIVO' : 'INACTIVO'} />
 								</Celda>
-								<td className="px-4 py-3">
-									<div className="flex items-center gap-1">
-										<BtnAccion onClick={() => abrirVer(ag)} Icono={Eye} titulo="Ver" />
-										{esAdmin && (
-											<>
-												<BtnAccion onClick={() => abrirEditar(ag)} Icono={Pencil} titulo="Editar" />
-												<BtnAccion
-													onClick={() => setAEliminar(ag)}
-													Icono={Trash2}
-													titulo="Eliminar"
-													colorHover="hover:text-red-400"
-												/>
-											</>
-										)}
-									</div>
-								</td>
 							</Fila>
 						))}
 					</tbody>
