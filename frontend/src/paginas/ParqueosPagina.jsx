@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/ParqueosPagina.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import { Plus, Eye, Pencil, Trash2, Clock, XCircle, CarFront } from 'lucide-react';
 import { useParqueos } from '../hooks/useParqueo.js';
@@ -10,6 +13,7 @@ import { Modal, ModalConfirmacion } from '../componentes/ui/Modales.jsx';
 import { Campo, Selector } from '../componentes/ui/Formularios.jsx';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
+import { toast } from 'sonner';
 
 const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
 
@@ -27,7 +31,6 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 	const [errorModal, setErrorModal] = useState('');
 	const [propiedades, setPropiedades] = useState([]);
 
-	// Cargar guardias y colaboradores activos al montar
 	useEffect(() => {
 		propiedadesApi
 			.obtenerTodas()
@@ -59,7 +62,7 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 			idPropiedad: '',
 			numeroParqueo: '',
 			descripcion: '',
-			activo: '',
+			activo: 1,
 		});
 		setErrorModal('');
 		setModal('crear');
@@ -96,20 +99,25 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 
 			if (modal === 'crear') {
 				await crear(datosAEnviar);
+				toast.success('Parqueo creado exitosamente');
 			} else {
 				await actualizar(seleccion.ID_PARQUEO, datosAEnviar);
+				toast.success('Parqueo actualizado exitosamente');
 			}
 			setModal(null);
 		} catch (err) {
 			setErrorModal(extraerError(err));
+			toast.error('Error al guardar el parqueo');
 		}
 	};
 
 	const confirmarEliminar = async () => {
 		try {
 			await eliminar(aEliminar.ID_PARQUEO);
+			toast.success('Parqueo eliminado exitosamente');
 		} catch (err) {
 			console.error('Error al eliminar:', extraerError(err));
+			toast.error('Error al eliminar el parqueo');
 		}
 		setAEliminar(null);
 	};
@@ -119,7 +127,6 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total"
@@ -141,7 +148,6 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* Tabla */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
@@ -195,7 +201,6 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={parqueos.length} unidad="parqueos" />
 			</div>
 
-			{/* Modal crear/editar */}
 			{(modal === 'crear' || modal === 'editar') && (
 				<Modal
 					titulo={modal === 'crear' ? 'Nuevo Parqueo' : 'Editar Parqueo'}
@@ -275,7 +280,6 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal ver */}
 			{modal === 'ver' && seleccion && (
 				<Modal titulo="Detalle del Parqueo" alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
@@ -295,7 +299,6 @@ export default function ParqueosPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal confirmación eliminar */}
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar parqueo?"

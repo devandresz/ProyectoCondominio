@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/UsuariosPagina.jsx
+// ============================================================
 import { useState } from 'react';
 import { Plus, Eye, Pencil, Ban, Users, ShieldCheck, UserCheck, UserX } from 'lucide-react';
 import { useUsuarios } from '../hooks/useUsuarios.js';
@@ -9,6 +12,7 @@ import { CabeceraTabla, Fila, Celda, PieTabla } from '../componentes/ui/Tablas.j
 import { Modal, ModalConfirmacion } from '../componentes/ui/Modales.jsx';
 import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
 import { extraerError } from '../utilidades/extraerError.js';
+import { toast } from 'sonner';
 
 const ROLES = ['Administrador', 'Residente', 'Guardia', 'Colaborador'];
 
@@ -87,22 +91,27 @@ export default function UsuariosPagina({ filtroGlobal = '' }) {
 			if (modal === 'crear') {
 				const datos = { ...form, idRol: Number(form.idRol) };
 				await crear(datos);
+				toast.success('Usuario creado exitosamente');
 			} else {
 				const datos = { ...form, idRol: Number(form.idRol) };
 				if (!datos.contrasena) delete datos.contrasena;
 				await actualizar(seleccion.ID_USUARIO, datos);
+				toast.success('Usuario actualizado exitosamente');
 			}
 			setModal(null);
 		} catch (err) {
 			setErrorModal(extraerError(err));
+			toast.error('Error al guardar el usuario');
 		}
 	};
 
 	const confirmarDesactivar = async () => {
 		try {
 			await desactivar(aDesactivar.ID_USUARIO);
+			toast.success('Usuario desactivado exitosamente');
 		} catch (err) {
 			console.error('Error al desactivar:', extraerError(err));
+			toast.error('Error al desactivar el usuario');
 		}
 		setADesactivar(null);
 	};
@@ -114,7 +123,6 @@ export default function UsuariosPagina({ filtroGlobal = '' }) {
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total Usuarios"
@@ -142,7 +150,6 @@ export default function UsuariosPagina({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* Tabla */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
@@ -194,7 +201,6 @@ export default function UsuariosPagina({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={usuarios.length} unidad="usuarios" />
 			</div>
 
-			{/* Modal crear/editar */}
 			{(modal === 'crear' || modal === 'editar') && (
 				<Modal
 					titulo={modal === 'crear' ? 'Nuevo Usuario' : 'Editar Usuario'}
@@ -278,7 +284,6 @@ export default function UsuariosPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal ver */}
 			{modal === 'ver' && seleccion && (
 				<Modal titulo="Detalle de Usuario" alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
@@ -299,7 +304,6 @@ export default function UsuariosPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal confirmación desactivar */}
 			{aDesactivar && (
 				<ModalConfirmacion
 					titulo="¿Desactivar usuario?"

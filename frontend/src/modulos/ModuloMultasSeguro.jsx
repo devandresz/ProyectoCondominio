@@ -1,4 +1,8 @@
+// ============================================================
+// 📁 RUTA: frontend/src/modulos/ModuloMultasSeguro.jsx
+// ============================================================
 // import { useEffect, useState } from 'react';
+// import { toast } from 'sonner';
 
 // export default function ModuloMultasSeguro() {
 // 	const [multas, setMultas] = useState([]);
@@ -21,6 +25,7 @@
 // 		} catch (err) {
 // 			console.error(err);
 // 			setError(err.message);
+//          toast.error(err.message);
 // 		}
 // 	};
 

@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/modulos/ModuloMulta.jsx
+// ============================================================
 // import { useState } from 'react';
 // import { CheckCircle, Plus, Pencil, Trash2, AlertTriangle, Zap } from 'lucide-react';
 // import { TarjetaMetrica, Etiqueta } from '../../componentes/ui/Etiquetas.jsx';
@@ -6,6 +9,8 @@
 // import { CabeceraTabla, Fila, Celda, PieTabla } from '../../componentes/ui/Tablas.jsx';
 // import { Modal, ModalConfirmacion } from '../../componentes/ui/Modales.jsx';
 // import { Campo, Entrada, Selector } from '../../componentes/ui/Formularios.jsx';
+// import { toast } from 'sonner';
+
 // export default function ModuloMulta({ }) {
 // 	const [busqueda, setBusqueda] = useState('');
 // 	const [modal, setModal] = useState(false);
@@ -43,6 +48,12 @@
 // 			</div>
 // 		);
 // 	}
+
+//  function registrar(e) {
+//      e.preventDefault();
+//      // toast.success("Llamado guardado exitosamente");
+//      setModal(false);
+//  }
 
 // 	return (
 // 		<div className="space-y-6 animate-in fade-in duration-300">
@@ -129,6 +140,7 @@
 // 												onClick={(e) => {
 // 													e.stopPropagation();
 // 													setDatos(datos.map((d) => (d.id === m.id ? { ...d, estado: 'PAGADO' } : d)));
+//                                                     // toast.success("Multa marcada como pagada");
 // 												}}
 // 												className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
 // 											>
@@ -225,6 +237,7 @@
 // 					onConfirmar={() => {
 // 						setDatos(datos.filter((m) => m.id !== aEliminar.id));
 // 						setAEliminar(null);
+//                      // toast.success("Llamado eliminado correctamente");
 // 					}}
 // 				/>
 // 			)}

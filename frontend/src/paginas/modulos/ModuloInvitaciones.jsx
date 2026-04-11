@@ -12,16 +12,15 @@ import { BtnPrimario, BtnAccion, BotonesModal } from '../../componentes/ui/Boton
 import { CabeceraTabla, Fila, Celda, PieTabla } from '../../componentes/ui/Tablas.jsx';
 import { Modal, ModalConfirmacion } from '../../componentes/ui/Modales.jsx';
 import { Campo, Entrada, Selector } from '../../componentes/ui/Formularios.jsx';
+import { toast } from 'sonner';
 
 export default function ModuloInvitaciones({ filtroGlobal = '' }) {
-	// ── STORE ─────────────────────────────────────────────────
 	const usuario = useStore((s) => s.usuario);
 
-	// ── ESTADO ────────────────────────────────────────────────
 	const [datos, setDatos] = useState([]);
 	const [cargando, setCargando] = useState(true);
 	const [busqueda, setBusqueda] = useState('');
-	const [modal, setModal] = useState(null); // null | 'nuevo' | 'qr'
+	const [modal, setModal] = useState(null);
 	const [seleccion, setSeleccion] = useState(null);
 	const [filaActiva, setFilaActiva] = useState(null);
 	const [aEliminar, setAEliminar] = useState(null);
@@ -31,8 +30,6 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 		tipo: 'Normal',
 	});
 
-	// ── CARGAR DATOS DESDE ORACLE ─────────────────────────────
-	// Le agregamos un parámetro "silencioso" para que no muestre la pantalla de carga al actualizar en segundo plano
 	const cargarDatos = async (silencioso = false) => {
 		if (!silencioso) setCargando(true);
 		try {
@@ -75,32 +72,25 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 		}
 	};
 
-	// 🔥 MAGIA 1: POLLING (TIEMPO REAL SILENCIOSO) 🔥
 	useEffect(() => {
-		cargarDatos(); // Carga la primera vez con la pantalla de "Cargando..."
+		cargarDatos();
 
-		// Configuramos un temporizador que pregunta a Oracle cada 3 segundos si hay cambios
 		const intervalo = setInterval(() => {
-			cargarDatos(true); // El 'true' hace que sea una recarga silenciosa
+			cargarDatos(true);
 		}, 3000);
 
-		// Limpiamos el temporizador si el usuario cambia a otra pantalla
 		return () => clearInterval(intervalo);
 	}, []);
 
-	// 🔥 MAGIA 2: ACTUALIZAR EL QR EN VIVO SI ESTÁ ABIERTO 🔥
 	useEffect(() => {
 		if (modal === 'qr' && seleccion) {
-			// Buscamos si la invitación que estamos viendo en grande acaba de cambiar de estado
 			const invitacionActualizada = datos.find((inv) => inv.id === seleccion.id);
 			if (invitacionActualizada && invitacionActualizada.activo !== seleccion.activo) {
-				// Si cambió (ej. el guardia la acaba de escanear), actualizamos el modal al instante
 				setSeleccion(invitacionActualizada);
 			}
 		}
 	}, [datos, modal, seleccion]);
 
-	// ── FILTRADO ──────────────────────────────────────────────
 	const termino = (busqueda || filtroGlobal).toLowerCase().trim();
 	const filtrados = termino
 		? datos.filter(
@@ -111,7 +101,6 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 			)
 		: datos;
 
-	// ── GUARDAR (crear o editar) ──────────────────────────────
 	const guardar = async (e) => {
 		if (e) e.preventDefault();
 		if (!form.visitante.trim()) return;
@@ -121,41 +110,41 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 				await invitacionesApi.actualizar(editandoId, {
 					nombreVisitante: form.visitante.trim(),
 				});
+				toast.success('Invitación actualizada exitosamente');
 			} else {
 				await invitacionesApi.crear({
 					nombreVisitante: form.visitante.trim(),
 					tipo: form.tipo,
 					idUsuario: usuario?.ID_USUARIO,
 				});
+				toast.success('Pase QR generado exitosamente');
 			}
 			await cargarDatos(true);
 			setModal(null);
 			setEditandoId(null);
 		} catch (error) {
 			console.error('Error al guardar:', error);
-			alert(error.response?.data?.mensaje || 'Error al guardar la invitación');
+			toast.error(error.response?.data?.mensaje || 'Error al guardar la invitación');
 		}
 	};
 
-	// ── ABRIR EDITAR ──────────────────────────────────────────
 	function abrirEditar(inv) {
 		setForm({ visitante: inv.visitante, tipo: inv.tipo });
 		setEditandoId(inv.id);
 		setModal('nuevo');
 	}
 
-	// ── DESACTIVAR (invalidar QR) — RN-I5 ────────────────────
 	const desactivar = async (inv) => {
 		try {
 			await invitacionesApi.desactivar(inv.id);
 			await cargarDatos(true);
+			toast.success('Pase QR invalidado correctamente');
 		} catch (error) {
 			console.error('Error al desactivar:', error);
-			alert(error.response?.data?.mensaje || 'Error al desactivar la invitación');
+			toast.error(error.response?.data?.mensaje || 'Error al desactivar la invitación');
 		}
 	};
 
-	// ── CARGANDO ──────────────────────────────────────────────
 	if (cargando)
 		return (
 			<div className="p-8 text-center text-zinc-400 animate-pulse">
@@ -163,10 +152,8 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 			</div>
 		);
 
-	// ── RENDER ────────────────────────────────────────────────
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* MÉTRICAS */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total Pases"
@@ -194,7 +181,6 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* TABLA */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
@@ -234,11 +220,11 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 								<td className="px-4 py-3">
 									<span
 										className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border
-                                        ${
-																																									inv.tipo === 'Normal'
-																																										? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-																																										: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20'
-																																								}`}
+                                        ${
+											inv.tipo === 'Normal'
+												? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+												: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20'
+										}`}
 									>
 										{inv.tipo}
 									</span>
@@ -298,7 +284,6 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={datos.length} unidad="invitaciones" />
 			</div>
 
-			{/* ── MODAL CREAR / EDITAR ─────────────────────────────── */}
 			{modal === 'nuevo' && (
 				<Modal
 					titulo={editandoId ? 'Editar Invitación' : 'Generar Pase de Visita'}
@@ -366,12 +351,10 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* ── MODAL VER QR ────────────────────────────────────── */}
 			{modal === 'qr' && seleccion && (
 				<Modal titulo={`Código QR — ${seleccion.visitante}`} alCerrar={() => setModal(null)}>
 					<div className="flex flex-col items-center gap-5">
 						<div className="p-4 bg-white rounded-xl shadow-lg relative transition-all duration-500">
-							{/* 🔥 ESTO APARECERÁ AUTOMÁTICAMENTE CUANDO LO ESCANEEN 🔥 */}
 							{seleccion.activo === 0 && (
 								<div className="absolute inset-0 bg-white/80 backdrop-blur-[2px] flex items-center justify-center rounded-xl z-10 animate-in zoom-in-90 duration-300">
 									<span className="bg-red-500 text-white font-bold px-3 py-1 rounded-full text-xs uppercase tracking-wider shadow-lg">
@@ -428,7 +411,6 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* ── MODAL CONFIRMACIÓN ELIMINAR ──────────────────────── */}
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar Invitación?"
@@ -439,11 +421,12 @@ export default function ModuloInvitaciones({ filtroGlobal = '' }) {
 							await invitacionesApi.eliminar(aEliminar.id);
 							setDatos(datos.filter((inv) => inv.id !== aEliminar.id));
 							setAEliminar(null);
+							toast.success('Invitación eliminada correctamente');
 						} catch (error) {
 							console.error('Error al eliminar:', error);
 							const msgError =
 								error.response?.data?.mensaje || 'Error al intentar eliminar la invitación';
-							alert(`⚠️ ALERTA DE SEGURIDAD:\n\n${msgError}`);
+							toast.error(`⚠️ ALERTA DE SEGURIDAD:\n\n${msgError}`);
 							setAEliminar(null);
 						}
 					}}

@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/accesoGarita.jsx
+// ============================================================
 import { useState } from 'react';
 import {
 	Plus,
@@ -22,6 +25,7 @@ import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
 import { formatearFecha } from '../utilidades/formatearFecha.js';
+import { toast } from 'sonner';
 
 const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
 
@@ -38,7 +42,6 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 	const [aEliminar, setAEliminar] = useState(null);
 	const [errorModal, setErrorModal] = useState('');
 	console.log(error);
-	// Cargar guardias y colaboradores activos al montar
 
 	const [form, setForm] = useState({
 		idInvitacion: '',
@@ -80,7 +83,6 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 		e.preventDefault();
 		setErrorModal('');
 		try {
-			//Aqui haré cambios con los ID
 			const datosAEnviar = {
 				...form,
 				idInvitacion: Number(form.idInvitacion),
@@ -93,20 +95,25 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 
 			if (modal === 'crear') {
 				await crear(datosAEnviar);
+				toast.success('Acceso registrado correctamente');
 			} else {
 				await actualizar(seleccion.ID_ACCESO, datosAEnviar);
+				toast.success('Acceso actualizado correctamente');
 			}
 			setModal(null);
 		} catch (err) {
 			setErrorModal(extraerError(err));
+			toast.error('Ocurrió un error al guardar el acceso');
 		}
 	};
 
 	const confirmarEliminar = async () => {
 		try {
 			await eliminar(aEliminar.ID_ACCESO);
+			toast.success('El registro se eliminó con éxito');
 		} catch (err) {
 			console.error('Error al eliminar:', extraerError(err));
+			toast.error('No se pudo eliminar el registro');
 		}
 		setAEliminar(null);
 	};
@@ -137,7 +144,7 @@ export default function AccesoGaritaPagina({ filtroGlobal = '' }) {
 					fondo="bg-zinc-500/10"
 				/>
 			</div>
-			{/* {console.log(accesoGarita)} */}
+
 			{/* Tabla */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">

@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/usuarioPropiedadPagina.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import {
 	Plus,
@@ -23,6 +26,7 @@ import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
 import { formatearFecha } from '../utilidades/formatearFecha.js';
+import { toast } from 'sonner';
 
 const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
 
@@ -40,7 +44,6 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 	const [errorModal, setErrorModal] = useState('');
 	const [personal, setPersonal] = useState([]);
 
-	// Cargar guardias y colaboradores activos al montar
 	useEffect(() => {
 		usuariosApi
 			.obtenerTodos()
@@ -110,20 +113,25 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 
 			if (modal === 'crear') {
 				await crear(datosAEnviar);
+				toast.success('Vínculo creado exitosamente');
 			} else {
 				await actualizar(seleccion.ID_USUARIO_PROPIEDAD, datosAEnviar);
+				toast.success('Vínculo actualizado exitosamente');
 			}
 			setModal(null);
 		} catch (err) {
 			setErrorModal(extraerError(err));
+			toast.error('Error al guardar el vínculo');
 		}
 	};
 
 	const confirmarEliminar = async () => {
 		try {
 			await eliminar(aEliminar.ID_USUARIO_PROPIEDAD);
+			toast.success('Vínculo eliminado exitosamente');
 		} catch (err) {
 			console.error('Error al eliminar:', extraerError(err));
+			toast.error('Error al eliminar el vínculo');
 		}
 		setAEliminar(null);
 	};
@@ -133,7 +141,6 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica etiqueta="Total" valor={up.length} Icono={CarFront} fondo="bg-zinc-800" />
 				<TarjetaMetrica
@@ -150,7 +157,6 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* Tabla */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
@@ -201,7 +207,6 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={up.length} unidad="up" />
 			</div>
 
-			{/* Modal crear/editar */}
 			{(modal === 'crear' || modal === 'editar') && (
 				<Modal
 					titulo={modal === 'crear' ? 'Nuevo Vinculo' : 'Editar Vinculo'}
@@ -268,7 +273,6 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal ver */}
 			{modal === 'ver' && seleccion && (
 				<Modal titulo="Detalle del Parqueo" alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
@@ -288,7 +292,6 @@ export default function UsuarioPropiedadPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal confirmación eliminar */}
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar vinculo de propiedad?"

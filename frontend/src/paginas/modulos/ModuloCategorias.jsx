@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/modulos/ModuloCategorias.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import { Tags, Plus, Pencil, Trash2 } from 'lucide-react';
 import { categoriasApi } from '../../api/categoriasApi.js';
@@ -7,6 +10,7 @@ import { BtnPrimario, BtnAccion, BotonesModal } from '../../componentes/ui/Boton
 import { CabeceraTabla, Fila, Celda, PieTabla } from '../../componentes/ui/Tablas.jsx';
 import { Modal, ModalConfirmacion } from '../../componentes/ui/Modales.jsx';
 import { Campo, Entrada } from '../../componentes/ui/Formularios.jsx';
+import { toast } from 'sonner';
 
 export default function ModuloCategorias({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState([]);
@@ -79,13 +83,15 @@ export default function ModuloCategorias({ filtroGlobal = '' }) {
 		try {
 			if (form.id) {
 				await categoriasApi.actualizar(form.id, payload);
+				toast.success('Categoría actualizada exitosamente');
 			} else {
 				await categoriasApi.crear(payload);
+				toast.success('Categoría creada exitosamente');
 			}
 			await cargarDatos();
 			setModal(null);
 		} catch (error) {
-			alert(error.response?.data?.mensaje || 'Error al guardar la categoría.');
+			toast.error(error.response?.data?.mensaje || 'Error al guardar la categoría.');
 		}
 	};
 
@@ -94,8 +100,9 @@ export default function ModuloCategorias({ filtroGlobal = '' }) {
 			await categoriasApi.eliminar(aEliminar.id);
 			await cargarDatos();
 			setAEliminar(null);
+			toast.success('Categoría eliminada exitosamente');
 		} catch (error) {
-			alert(error.response?.data?.mensaje || 'Error al eliminar.');
+			toast.error(error.response?.data?.mensaje || 'Error al eliminar.');
 		}
 	};
 

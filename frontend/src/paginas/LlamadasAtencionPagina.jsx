@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/LlamadasAtencionPagina.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import { Plus, Eye, Pencil, Trash2, PhoneCall } from 'lucide-react';
 import { useLlamadasAtencion } from '../hooks/useLlamadasAtencion.js';
@@ -13,6 +16,7 @@ import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
 import { formatearFecha } from '../utilidades/formatearFecha.js';
+import { toast } from 'sonner';
 
 const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
 
@@ -33,7 +37,6 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 	const [cargos, setCargos] = useState([]);
 	const [estadoLista, setEstadoLista] = useState(false);
 
-	// Cargar guardias y colaboradores activos al montar
 	useEffect(() => {
 		propiedadesApi
 			.obtenerTodas()
@@ -105,20 +108,25 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 
 			if (modal === 'crear') {
 				await crear(datosAEnviar);
+				toast.success('Llamada de atención creada exitosamente');
 			} else {
 				await actualizar(seleccion.ID_LLAMADO, datosAEnviar);
+				toast.success('Llamada de atención actualizada exitosamente');
 			}
 			setModal(null);
 		} catch (err) {
 			setErrorModal(extraerError(err));
+			toast.error('Ocurrió un error al guardar la llamada de atención');
 		}
 	};
 
 	const confirmarEliminar = async () => {
 		try {
 			await eliminar(aEliminar.ID_LLAMADO);
+			toast.success('Llamada de atención eliminada con éxito');
 		} catch (err) {
 			console.error('Error al eliminar:', extraerError(err));
+			toast.error('No se pudo eliminar la llamada de atención');
 		}
 		setAEliminar(null);
 	};
@@ -129,7 +137,6 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total"
@@ -139,7 +146,6 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* Tabla */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
@@ -212,7 +218,6 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={llamadasAtencion.length} unidad="llamados" />
 			</div>
 
-			{/* Modal crear/editar */}
 			{(modal === 'crear' || modal === 'editar') && (
 				<Modal
 					titulo={modal === 'crear' ? 'Nueva llamada' : 'Editar llamada'}
@@ -271,7 +276,6 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal ver */}
 			{modal === 'ver' && seleccion && (
 				<Modal titulo="Detalle de la llamada" alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
@@ -289,7 +293,6 @@ export default function LlamadasAtencionPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal confirmación eliminar */}
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar llamado?"

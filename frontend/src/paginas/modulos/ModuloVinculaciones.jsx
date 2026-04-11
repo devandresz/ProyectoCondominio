@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/modulos/ModuloVinculaciones.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import { Link, Plus, Pencil, Trash2, Ban } from 'lucide-react';
 import { vinculacionesApi } from '../../api/vinculacionesApi.js';
@@ -9,6 +12,7 @@ import { BtnPrimario, BtnAccion, BotonesModal } from '../../componentes/ui/Boton
 import { CabeceraTabla, Fila, Celda, PieTabla } from '../../componentes/ui/Tablas.jsx';
 import { Modal, ModalConfirmacion } from '../../componentes/ui/Modales.jsx';
 import { Campo, Selector } from '../../componentes/ui/Formularios.jsx';
+import { toast } from 'sonner';
 
 export default function ModuloVinculaciones({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState([]);
@@ -29,7 +33,6 @@ export default function ModuloVinculaciones({ filtroGlobal = '' }) {
 	const cargarTodo = async () => {
 		setCargando(true);
 		try {
-			// Hacemos las 3 peticiones al mismo tiempo para que cargue súper rápido
 			const [resVinc, resUsu, resProp] = await Promise.all([
 				vinculacionesApi.obtenerTodas(),
 				usuariosApi.obtenerTodos(),
@@ -53,7 +56,7 @@ export default function ModuloVinculaciones({ filtroGlobal = '' }) {
 		} catch (error) {
 			console.error('Error al cargar datos:', error);
 			if (error.response?.status === 401) {
-				alert('Sesión expirada. Por favor, vuelve a iniciar sesión.');
+				toast.error('Sesión expirada. Por favor, vuelve a iniciar sesión.');
 			}
 		} finally {
 			setCargando(false);
@@ -98,13 +101,15 @@ export default function ModuloVinculaciones({ filtroGlobal = '' }) {
 		try {
 			if (form.id) {
 				await vinculacionesApi.actualizar(form.id, payload);
+				toast.success('Vínculo actualizado exitosamente');
 			} else {
 				await vinculacionesApi.crear(payload);
+				toast.success('Vínculo creado exitosamente');
 			}
 			await cargarTodo();
 			setModal(null);
 		} catch (error) {
-			alert(error.response?.data?.mensaje || 'Error al guardar el vínculo.');
+			toast.error(error.response?.data?.mensaje || 'Error al guardar el vínculo.');
 		}
 	};
 
@@ -113,8 +118,9 @@ export default function ModuloVinculaciones({ filtroGlobal = '' }) {
 			const nuevoActivo = estadoActual === 'Activo' ? 0 : 1;
 			await vinculacionesApi.actualizar(id, { activo: nuevoActivo });
 			await cargarTodo();
+			toast.success('Estado de vínculo actualizado');
 		} catch (error) {
-			alert('Error al cambiar el estado.');
+			toast.error('Error al cambiar el estado.');
 		}
 	};
 
@@ -123,8 +129,9 @@ export default function ModuloVinculaciones({ filtroGlobal = '' }) {
 			await vinculacionesApi.eliminar(aEliminar.id);
 			await cargarTodo();
 			setAEliminar(null);
+			toast.success('Vínculo eliminado exitosamente');
 		} catch (error) {
-			alert(error.response?.data?.mensaje || 'Error al eliminar.');
+			toast.error(error.response?.data?.mensaje || 'Error al eliminar.');
 		}
 	};
 

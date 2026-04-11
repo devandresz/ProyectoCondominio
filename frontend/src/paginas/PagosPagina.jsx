@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/PagosPagina.jsx
+// ============================================================
 import { useState, useEffect, useRef } from 'react';
 import {
 	Plus,
@@ -22,6 +25,7 @@ import { Campo, Entrada } from '../componentes/ui/Formularios.jsx';
 import { formatearFecha } from '../utilidades/formatearFecha.js';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
+import { toast } from 'sonner';
 
 const limpiar = (str) => str?.toString().toLowerCase().replace(/\s/g, '') ?? '';
 const formatQ = (monto) => `Q${Number(monto ?? 0).toFixed(2)}`;
@@ -58,7 +62,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 		observaciones: '',
 	});
 
-	// Debounce para cargar estado de cuenta al escribir idPropiedad
 	useEffect(() => {
 		if (modal !== 'crear') return;
 		clearTimeout(debounceRef.current);
@@ -72,11 +75,9 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 		return () => clearTimeout(debounceRef.current);
 	}, [form.idPropiedad, modal]);
 
-	// Al abrir modal: residente carga su propio estado de cuenta (sin idPropiedad en query)
 	const abrirCrear = () => {
 		setForm({ idPropiedad: '', numeroBoleta: '', observaciones: '' });
 		setErrorModal('');
-		// Residente: cargar estado de cuenta propio de inmediato
 		if (!esAdmin) cargarEstadoCuenta();
 		setModal('crear');
 	};
@@ -100,9 +101,9 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 		e.preventDefault();
 		setErrorModal('');
 
-		// Validar que haya cargos pendientes antes de intentar
 		if (estadoCuenta && estadoCuenta.cantidadCargosPendientes === 0) {
 			setErrorModal('Esta propiedad no tiene cargos pendientes.');
+			toast.error('Esta propiedad no tiene cargos pendientes.');
 			return;
 		}
 
@@ -112,8 +113,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 				numeroBoleta: form.numeroBoleta.trim(),
 				observaciones: form.observaciones.trim() || undefined,
 			};
-			// Residente: el backend usa su usuario para identificar la propiedad (RN-F4)
-			// Admin: envía idPropiedad explícitamente
 			if (!esAdmin) delete datos.idPropiedad;
 
 			await crear(
@@ -121,12 +120,13 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 			);
 			setModal(null);
 			cargarPagos();
+			toast.success('Pago registrado exitosamente');
 		} catch (err) {
 			setErrorModal(extraerError(err));
+			toast.error('Error al registrar el pago');
 		}
 	};
 
-	// Filtrado de tabla
 	const termino = limpiar(busqueda || filtroGlobal);
 	const filtrados = termino
 		? pagos.filter(
@@ -138,7 +138,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 			)
 		: pagos;
 
-	// Métricas
 	const totalPagado = pagos.reduce((acc, p) => acc + Number(p.MONTO_TOTAL ?? 0), 0);
 	const pagosEsteMes = pagos.filter((p) => {
 		const fecha = new Date(p.FECHA_PAGO);
@@ -151,7 +150,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total pagos"
@@ -191,7 +189,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* Tabla principal */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
@@ -248,11 +245,9 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={pagos.length} unidad="pagos" />
 			</div>
 
-			{/* ── Modal crear pago ── */}
 			{modal === 'crear' && (
 				<Modal titulo="Registrar Pago" alCerrar={() => setModal(null)}>
 					<form onSubmit={guardar} className="space-y-5">
-						{/* Admin: ingresa idPropiedad */}
 						{esAdmin && (
 							<Campo etiqueta="ID de Propiedad">
 								<Entrada
@@ -265,7 +260,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 							</Campo>
 						)}
 
-						{/* Preview de cargos pendientes */}
 						<div className="rounded-xl border border-borde bg-fondo overflow-hidden">
 							<div className="px-4 py-3 border-b border-borde bg-tarjeta/50 flex items-center gap-2">
 								<AlertCircle className="w-4 h-4 text-amber-400" />
@@ -292,7 +286,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 								</div>
 							) : (
 								<div>
-									{/* Lista de cargos */}
 									<div className="divide-y divide-borde">
 										{estadoCuenta.cargosPendientes.map((cargo) => (
 											<div key={cargo.ID_CARGO} className="flex items-center justify-between px-4 py-3">
@@ -314,7 +307,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 										))}
 									</div>
 
-									{/* Total */}
 									<div className="flex items-center justify-between px-4 py-3 bg-tarjeta/50 border-t border-borde">
 										<span className="text-[12px] font-bold uppercase tracking-wide text-secundario">
 											Total a pagar
@@ -324,7 +316,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 										</span>
 									</div>
 
-									{/* Último pago */}
 									{estadoCuenta.ultimoPago && (
 										<div className="px-4 py-2 bg-fondo border-t border-borde">
 											<p className="text-[11px] text-zinc-600">
@@ -340,7 +331,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 							)}
 						</div>
 
-						{/* Número de boleta */}
 						<Campo etiqueta="Número de Boleta">
 							<Entrada
 								required
@@ -350,7 +340,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 							/>
 						</Campo>
 
-						{/* Observaciones (opcional) */}
 						<Campo etiqueta="Observaciones (opcional)">
 							<Entrada
 								placeholder="Ej: Pago en efectivo en caja"
@@ -375,7 +364,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* ── Modal ver detalle ── */}
 			{modal === 'ver' && seleccion && (
 				<Modal
 					titulo={`Detalle — Boleta ${seleccion.NUMERO_BOLETA}`}
@@ -385,7 +373,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 						<div className="text-secundario text-sm text-center py-8">Cargando detalle...</div>
 					) : (
 						<div className="space-y-4">
-							{/* Info general del pago */}
 							<div className="space-y-2">
 								{[
 									['# Pago', seleccion.ID_PAGO],
@@ -404,7 +391,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 									))}
 							</div>
 
-							{/* Desglose de cargos cubiertos */}
 							<div className="rounded-xl border border-borde overflow-hidden">
 								<div className="px-4 py-2.5 bg-tarjeta/50 border-b border-borde">
 									<span className="text-[11px] font-bold uppercase tracking-wide text-secundario">
@@ -429,7 +415,6 @@ export default function PagosPagina({ filtroGlobal = '' }) {
 									<p className="text-secundario text-sm text-center py-4">Sin detalles disponibles.</p>
 								)}
 
-								{/* Total */}
 								<div className="flex justify-between px-4 py-3 bg-tarjeta/50 border-t border-borde">
 									<span className="text-[12px] font-bold uppercase tracking-wide text-secundario">
 										Total pagado

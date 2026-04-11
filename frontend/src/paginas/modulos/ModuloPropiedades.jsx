@@ -1,17 +1,21 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/modulos/ModuloPropiedades.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import { Building, CheckCircle, Users, Plus, Eye, Pencil, Ban, Trash2 } from 'lucide-react';
 import { propiedadesApi } from '../../api/propiedadesApi.js';
-import { categoriasApi } from '../../api/categoriasApi.js'; // 🔥 IMPORTAMOS LA NUEVA API
+import { categoriasApi } from '../../api/categoriasApi.js';
 import { TarjetaMetrica, Etiqueta } from '../../componentes/ui/Etiquetas.jsx';
 import { BuscadorCasa } from '../../componentes/ui/Buscador.jsx';
 import { BtnPrimario, BtnAccion, BotonesModal } from '../../componentes/ui/Botones.jsx';
 import { CabeceraTabla, Fila, Celda, PieTabla } from '../../componentes/ui/Tablas.jsx';
 import { Modal, ModalConfirmacion } from '../../componentes/ui/Modales.jsx';
 import { Campo, Entrada, Selector } from '../../componentes/ui/Formularios.jsx';
+import { toast } from 'sonner';
 
 export default function ModuloPropiedades({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState([]);
-	const [categoriasBD, setCategoriasBD] = useState([]); // 🔥 Estado para las categorías reales
+	const [categoriasBD, setCategoriasBD] = useState([]);
 	const [cargando, setCargando] = useState(true);
 	const [busqueda, setBusqueda] = useState('');
 	const [modal, setModal] = useState(null);
@@ -21,7 +25,7 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 
 	const [form, setForm] = useState({
 		numero: '',
-		idCategoria: '', // Ahora guardamos el ID real de la categoría
+		idCategoria: '',
 		propietario: '',
 		inquilino: '',
 	});
@@ -29,7 +33,6 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 	const cargarDatos = async () => {
 		setCargando(true);
 		try {
-			// Descargamos propiedades y categorías al mismo tiempo
 			const [resProp, resCat] = await Promise.all([
 				propiedadesApi.obtenerTodas(),
 				categoriasApi.obtenerTodas(),
@@ -95,14 +98,16 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 		try {
 			if (editandoId) {
 				await propiedadesApi.actualizar(editandoId, payload);
+				toast.success('Propiedad actualizada correctamente');
 			} else {
 				await propiedadesApi.crear(payload);
+				toast.success('Propiedad registrada correctamente');
 			}
 			await cargarDatos();
 			setModal(null);
 			setEditandoId(null);
 		} catch (error) {
-			alert(error.response?.data?.mensaje || 'Error al guardar la propiedad');
+			toast.error(error.response?.data?.mensaje || 'Error al guardar la propiedad');
 		}
 	};
 
@@ -122,13 +127,13 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 			const nuevoActivo = estadoActual === 'Activo' ? 0 : 1;
 			await propiedadesApi.actualizar(id, { activo: nuevoActivo });
 			await cargarDatos();
+			toast.success('Estado actualizado');
 		} catch (error) {
 			console.error('Error al cambiar estado:', error);
-			alert('Error al intentar cambiar el estado en la base de datos.');
+			toast.error('Error al intentar cambiar el estado en la base de datos.');
 		}
 	};
 
-	// Buscamos los detalles de la categoría seleccionada para mostrarlos en el UI
 	const categoriaSeleccionada = categoriasBD.find(
 		(c) => c.ID_CATEGORIA === Number(form.idCategoria),
 	);
@@ -257,7 +262,6 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={datos.length} unidad="propiedades" />
 			</div>
 
-			{/* MODAL DE REGISTRO / EDICIÓN */}
 			{modal === 'nuevo' && (
 				<Modal
 					titulo={editandoId ? 'Editar Propiedad' : 'Registrar Propiedad'}
@@ -307,7 +311,6 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 							/>
 						</Campo>
 
-						{/* PANEL DINÁMICO: Muestra la cuota según la categoría seleccionada */}
 						<div className="p-3 rounded-lg bg-zinc-800/60 border border-borde text-xs text-secundario space-y-1">
 							<p>
 								Cuota a cobrar:{' '}
@@ -334,7 +337,6 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* MODAL DETALLE */}
 			{modal === 'detalle' && seleccion && (
 				<Modal titulo={`Detalle — ${seleccion.numero}`} alCerrar={() => setModal(null)}>
 					<div className="space-y-0">
@@ -359,7 +361,6 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* MODAL CONFIRMACIÓN ELIMINAR */}
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar Propiedad?"
@@ -370,8 +371,9 @@ export default function ModuloPropiedades({ filtroGlobal = '' }) {
 							await propiedadesApi.eliminar(aEliminar.id);
 							await cargarDatos();
 							setAEliminar(null);
+							toast.success('Propiedad eliminada correctamente');
 						} catch (error) {
-							alert(error.response?.data?.mensaje || 'Error al eliminar en la BD.');
+							toast.error(error.response?.data?.mensaje || 'Error al eliminar en la BD.');
 						}
 					}}
 				/>

@@ -24,9 +24,6 @@ import useStore from '../../estado/useStore.js';
 import { propiedadesApi } from '../../api/propiedadesApi.js';
 import { invitacionesApi } from '../../api/invitacionesApi.js';
 
-/* ════════════════════════════════════════════════════════════
-   GLOBO 3D — canvas puro, sin fondo, máximo detalle
-════════════════════════════════════════════════════════════ */
 function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 	const canvasRef = useRef(null);
 	const animRef = useRef(null);
@@ -48,7 +45,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 			cy = H / 2;
 		const R = Math.min(W, H) * 0.44;
 
-		// ── Polígonos de tierra precisos ────────────────────
 		const TIERRA = [
 			// América del Norte
 			[
@@ -309,7 +305,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 			const ry = rotRef.current.y;
 			const t = Date.now();
 
-			// ── Glow exterior difuso (sin fondo sólido) ──────
 			const glowOut = ctx.createRadialGradient(cx, cy, R * 0.85, cx, cy, R * 1.35);
 			glowOut.addColorStop(0, 'rgba(99,102,241,0.15)');
 			glowOut.addColorStop(0.4, 'rgba(16,185,129,0.06)');
@@ -319,7 +314,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 			ctx.fillStyle = glowOut;
 			ctx.fill();
 
-			// ── Atmósfera (anillo de luz) ─────────────────────
 			const atm = ctx.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.08);
 			atm.addColorStop(0, 'rgba(99,102,241,0)');
 			atm.addColorStop(0.5, 'rgba(99,102,241,0.18)');
@@ -329,7 +323,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 			ctx.fillStyle = atm;
 			ctx.fill();
 
-			// ── Océano base (semitransparente) ────────────────
 			const ocean = ctx.createRadialGradient(cx - R * 0.3, cy - R * 0.3, 0, cx, cy, R);
 			ocean.addColorStop(0, 'rgba(20,30,80,0.75)');
 			ocean.addColorStop(0.7, 'rgba(8,12,40,0.85)');
@@ -339,8 +332,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 			ctx.fillStyle = ocean;
 			ctx.fill();
 
-			// ── Grid fino de coordenadas ──────────────────────
-			// Paralelos cada 15°
 			for (let la = -75; la <= 75; la += 15) {
 				const alpha = la === 0 ? 0.22 : 0.09;
 				ctx.beginPath();
@@ -358,7 +349,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				ctx.lineWidth = la === 0 ? 0.8 : 0.4;
 				ctx.stroke();
 			}
-			// Meridianos cada 15°
 			for (let lo = -180; lo < 180; lo += 15) {
 				const alpha = lo === 0 ? 0.22 : 0.09;
 				ctx.beginPath();
@@ -377,7 +367,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				ctx.stroke();
 			}
 
-			// ── Continentes ───────────────────────────────────
 			TIERRA.forEach((coords, idx) => {
 				const puntos = coords.map(([la, lo]) => project(la, lo, ry));
 				const visibles = puntos.filter((p) => p.v);
@@ -396,7 +385,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				});
 				ctx.closePath();
 
-				// Relleno con gradiente verde-índigo
 				const grad = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
 				grad.addColorStop(0, 'rgba(16,185,129,0.65)');
 				grad.addColorStop(0.5, 'rgba(52,211,153,0.45)');
@@ -404,13 +392,11 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				ctx.fillStyle = grad;
 				ctx.fill();
 
-				// Borde brillante
 				ctx.strokeStyle = 'rgba(52,211,153,0.5)';
 				ctx.lineWidth = 0.7;
 				ctx.stroke();
 			});
 
-			// ── Puntos de "ciudades" decorativos ──────────────
 			const CIUDADES = [
 				[40.7, -74],
 				[51.5, 0],
@@ -428,7 +414,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
 				ctx.fillStyle = `rgba(250,250,250,${alpha * 0.6})`;
 				ctx.fill();
-				// Pequeño glow
 				const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 6);
 				g.addColorStop(0, `rgba(250,250,250,${alpha * 0.15})`);
 				g.addColorStop(1, 'transparent');
@@ -438,14 +423,12 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				ctx.fill();
 			});
 
-			// ── Punto Guatemala ───────────────────────────────
 			const gt = project(lat, lon, ry);
 			if (gt.v && gt.z > 0.05) {
 				const alpha = Math.min(1, gt.z * 1.5);
 				const pulso = (Math.sin(t / 380) + 1) / 2;
 				const pulso2 = (Math.sin(t / 380 + 1) + 1) / 2;
 
-				// Anillos concéntricos
 				[22, 14, 8].forEach((r, i) => {
 					const a = [0.15, 0.3, 0.5][i] * alpha;
 					const p2 = [pulso, pulso2, 1][i];
@@ -456,7 +439,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 					ctx.stroke();
 				});
 
-				// Núcleo
 				ctx.beginPath();
 				ctx.arc(gt.x, gt.y, 4.5, 0, Math.PI * 2);
 				ctx.fillStyle = `rgba(16,185,129,${alpha})`;
@@ -466,7 +448,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				ctx.fillStyle = `rgba(255,255,255,${alpha})`;
 				ctx.fill();
 
-				// Línea y etiqueta
 				if (gt.z > 0.3) {
 					ctx.beginPath();
 					ctx.moveTo(gt.x + 6, gt.y - 6);
@@ -481,7 +462,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 				}
 			}
 
-			// ── Brillo especular (luz superior izq) ───────────
 			const spec = ctx.createRadialGradient(
 				cx - R * 0.4,
 				cy - R * 0.4,
@@ -498,7 +478,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 			ctx.fillStyle = spec;
 			ctx.fill();
 
-			// ── Sombra en borde inferior derecho ─────────────
 			const shadow = ctx.createRadialGradient(
 				cx + R * 0.35,
 				cy + R * 0.35,
@@ -514,7 +493,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 			ctx.fillStyle = shadow;
 			ctx.fill();
 
-			// ── Borde del globo ───────────────────────────────
 			ctx.beginPath();
 			ctx.arc(cx, cy, R, 0, Math.PI * 2);
 			const borde = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
@@ -541,9 +519,6 @@ function GloboTierra({ lat = 14.6349, lon = -90.5069 }) {
 	);
 }
 
-/* ════════════════════════════════════════════════════════════
-   RELOJ EN VIVO
-════════════════════════════════════════════════════════════ */
 function HoraViva() {
 	const [tiempo, setTiempo] = useState({ h: '', m: '', s: '', fecha: '' });
 	useEffect(() => {
@@ -573,9 +548,6 @@ function HoraViva() {
 	);
 }
 
-/* ════════════════════════════════════════════════════════════
-   CARD MÉTRICA CON ANIMACIÓN CHICLE
-════════════════════════════════════════════════════════════ */
 function CardMetrica({ etiqueta, valor, sub, Icono, color, delay, onClick, trend }) {
 	const [listo, setListo] = useState(false);
 	useEffect(() => {
@@ -593,11 +565,9 @@ function CardMetrica({ etiqueta, valor, sub, Icono, color, delay, onClick, trend
 			}}
 			className={`relative p-5 rounded-2xl border bg-tarjeta overflow-hidden ${color.border} ${onClick ? 'cursor-pointer group hover:-translate-y-1 transition-transform duration-300' : ''}`}
 		>
-			{/* Glow */}
 			<div
 				className={`absolute -top-8 -right-8 w-28 h-28 rounded-full blur-2xl opacity-25 ${color.glow}`}
 			/>
-			{/* Línea superior */}
 			<div className={`absolute top-0 left-4 right-4 h-px ${color.line}`} />
 
 			<div className="relative z-10">
@@ -632,9 +602,6 @@ function CardMetrica({ etiqueta, valor, sub, Icono, color, delay, onClick, trend
 	);
 }
 
-/* ════════════════════════════════════════════════════════════
-   PANTALLA PRINCIPAL
-════════════════════════════════════════════════════════════ */
 export default function PantallaBienvenida({ setModuloActivo }) {
 	const usuario = useStore((s) => s.usuario);
 	const [stats, setStats] = useState({ props: '—', activas: '—', qr: '—', qrActivos: '—' });
@@ -740,17 +707,14 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 
 	return (
 		<div className="flex flex-col gap-5 select-none">
-			{/* ══ FILA PRINCIPAL ══════════════════════════════════ */}
 			<div
 				className="grid gap-5"
 				style={{ gridTemplateColumns: '300px 1fr 200px', minHeight: '360px' }}
 			>
-				{/* ── Panel izquierdo: identidad ──────────────────── */}
 				<div
 					className="relative rounded-2xl border border-borde bg-tarjeta p-7 flex flex-col justify-between overflow-hidden"
 					style={{ animation: 'entrada 0.65s cubic-bezier(0.34,1.56,0.64,1) both' }}
 				>
-					{/* Grid de puntos decorativo */}
 					<div
 						style={{
 							position: 'absolute',
@@ -760,13 +724,11 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 							backgroundSize: '18px 18px',
 						}}
 					/>
-					{/* Gradiente de fondo */}
 					<div className="absolute inset-0 pointer-events-none">
 						<div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-emerald-500/8 blur-3xl" />
 					</div>
 
 					<div className="relative z-10">
-						{/* Estado sistema */}
 						<div className="flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-emerald-500/8 border border-emerald-500/15 w-fit">
 							<Wifi className="w-3 h-3 text-emerald-400" />
 							<span className="text-[10px] font-bold tracking-[0.2em] uppercase text-emerald-400">
@@ -775,18 +737,15 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 							<span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse ml-1" />
 						</div>
 
-						{/* Saludo */}
 						<p className="text-xs font-bold tracking-[0.3em] uppercase text-secundario mb-2">
 							{saludo}
 						</p>
 
-						{/* Nombre */}
 						<h1 className="text-[2.2rem] font-bold text-primario leading-none mb-1">
 							{usuario?.NOMBRE ?? 'Bienvenido'}
 						</h1>
 						<h2 className="text-xl font-semibold text-secundario mb-5">{usuario?.APELLIDO ?? ''}</h2>
 
-						{/* Rol badge */}
 						<div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-fondo border border-borde w-fit">
 							<Shield className="w-3.5 h-3.5 text-emerald-400" />
 							<span className="text-xs font-bold text-primario">{usuario?.ROL ?? '—'}</span>
@@ -795,7 +754,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 						</div>
 					</div>
 
-					{/* Ubicación */}
 					<div className="relative z-10 mt-4 p-3 rounded-xl bg-fondo border border-borde">
 						<div className="flex items-center gap-2 mb-1">
 							<MapPin className="w-3.5 h-3.5 text-emerald-400" />
@@ -811,7 +769,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 					</div>
 				</div>
 
-				{/* ── GLOBO — sin fondo ────────────────────────────── */}
 				<div
 					className="relative rounded-2xl border border-borde overflow-hidden"
 					style={{
@@ -819,7 +776,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 						animation: 'entrada 0.7s cubic-bezier(0.34,1.56,0.64,1) 80ms both',
 					}}
 				>
-					{/* Etiqueta ubicación */}
 					<div className="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-tarjeta/70 backdrop-blur-md border border-borde">
 						<span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
 						<span className="text-[11px] font-bold font-mono text-primario">
@@ -827,7 +783,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 						</span>
 					</div>
 
-					{/* Coordenadas */}
 					<div className="absolute bottom-4 left-4 z-10 font-mono text-[10px] text-secundario">
 						<span className="text-emerald-400">LAT</span> 14.6349{' '}
 						<span className="text-emerald-400 ml-2">LON</span> -90.5069
@@ -836,12 +791,10 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 					<GloboTierra lat={14.6349} lon={-90.5069} />
 				</div>
 
-				{/* ── Panel derecho: acciones ──────────────────────── */}
 				<div
 					className="flex flex-col gap-3"
 					style={{ animation: 'entrada 0.65s cubic-bezier(0.34,1.56,0.64,1) 160ms both' }}
 				>
-					{/* Reloj */}
 					<div className="p-4 rounded-2xl border border-borde bg-tarjeta relative overflow-hidden">
 						<div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent" />
 						<div className="flex items-center gap-2 mb-3">
@@ -853,7 +806,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 						<HoraViva />
 					</div>
 
-					{/* Botón generar QR */}
 					{(usuario?.ROL === 'Administrador' ||
 						usuario?.ROL === 'Guardia' ||
 						usuario?.ROL === 'Residente') && (
@@ -872,7 +824,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 						</button>
 					)}
 
-					{/* Botón residentes */}
 					{usuario?.ROL === 'Administrador' && (
 						<button
 							onClick={() => setModuloActivo?.('Directorio Residentes')}
@@ -889,7 +840,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 						</button>
 					)}
 
-					{/* Botón propiedades */}
 					{usuario?.ROL === 'Administrador' && (
 						<button
 							onClick={() => setModuloActivo?.('Gestión de Propiedades')}
@@ -909,7 +859,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 				</div>
 			</div>
 
-			{/* ══ CARDS MÉTRICAS ══════════════════════════════════ */}
 			<div
 				className={`grid gap-4 ${cardsFiltradas.length === 4 ? 'grid-cols-4' : cardsFiltradas.length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}
 			>
@@ -922,7 +871,6 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 				))}
 			</div>
 
-			{/* ══ BARRA DE ESTADO ════════════════════════════════ */}
 			<div
 				className="flex items-center gap-4 px-5 py-3 rounded-2xl border border-borde bg-tarjeta"
 				style={{ animation: 'entrada 0.5s ease 650ms both' }}
@@ -956,7 +904,7 @@ export default function PantallaBienvenida({ setModuloActivo }) {
 			<style>{`
 				@keyframes entrada {
 					from { opacity: 0; transform: translateY(20px) scale(0.96); }
-					to   { opacity: 1; transform: translateY(0) scale(1); }
+					to   { opacity: 1; transform: translateY(0) scale(1); }
 				}
 			`}</style>
 		</div>

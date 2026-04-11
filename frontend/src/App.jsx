@@ -5,6 +5,7 @@
 import { useEffect } from 'react';
 import EnrutadorPrincipal from './rutas/EnrutadorPrincipal.jsx';
 import useStore from './estado/useStore.js';
+import { Toaster } from 'sonner';
 
 export default function App() {
 	const temaOscuro = useStore((s) => s.temaOscuro);
@@ -20,5 +21,11 @@ export default function App() {
 		}
 	}, [temaOscuro]);
 
-	return <EnrutadorPrincipal />;
+	return (
+		<>
+			{/* El Toaster va aquí, junto a tu enrutador */}
+			<Toaster position="top-right" richColors />
+			<EnrutadorPrincipal />
+		</>
+	);
 }

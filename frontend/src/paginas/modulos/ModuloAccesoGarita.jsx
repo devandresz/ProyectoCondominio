@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/modulos/ModuloAccesoGarita.jsx
+// ============================================================
 import { useState } from 'react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { ShieldCheck, XCircle, CheckCircle2, QrCode, UserCheck } from 'lucide-react';
@@ -5,6 +8,7 @@ import { accesoGaritaApi } from '../../api/accesoGaritaApi.js';
 import useStore from '../../estado/useStore.js';
 import { BtnPrimario } from '../../componentes/ui/Botones.jsx';
 import { Campo, Entrada, Selector } from '../../componentes/ui/Formularios.jsx';
+import { toast } from 'sonner';
 
 export default function ModuloAccesoGarita() {
 	const usuarioActual = useStore((state) => state.usuario);
@@ -21,15 +25,12 @@ export default function ModuloAccesoGarita() {
 		observaciones: '',
 	});
 
-	// 🔥 LA MAGIA ESTÁ AQUÍ: Función que limpia el texto antes de mandarlo a Oracle 🔥
 	const procesarQr = async (textoBruto) => {
 		if (!textoBruto || estadoPantalla !== 'ESCANEAR') return;
 
-		// 1. Extraemos el texto puro (por si el escáner manda un objeto en lugar de string)
 		const str =
 			typeof textoBruto === 'string' ? textoBruto : textoBruto[0]?.rawValue || String(textoBruto);
 
-		// 2. Limpiamos la URL: Si dice "http://10.26.../garita/validar/QR-123", nos quedamos solo con "QR-123"
 		let codigoLimpio = str;
 		if (str.includes('QR-')) {
 			codigoLimpio = 'QR-' + str.split('QR-')[1].trim();
@@ -41,7 +42,6 @@ export default function ModuloAccesoGarita() {
 		setEstadoPantalla('VALIDANDO');
 
 		try {
-			// 3. Mandamos el código ya limpio al backend
 			const respuesta = await accesoGaritaApi.validarQr(codigoLimpio);
 			const datosInvitacion = respuesta.data;
 
@@ -61,6 +61,7 @@ export default function ModuloAccesoGarita() {
 			setInvitacion(datosInvitacion);
 			setForm({ ...form, nombreReal: datosInvitacion.NOMBRE_VISITANTE });
 			setEstadoPantalla('FORMULARIO');
+			toast.success('Código QR validado correctamente');
 		} catch (error) {
 			lanzarError(
 				error.response?.data?.mensaje || 'El código QR no pertenece a este condominio.',
@@ -71,6 +72,7 @@ export default function ModuloAccesoGarita() {
 	const lanzarError = (mensaje) => {
 		setMensajeError(mensaje);
 		setEstadoPantalla('ERROR');
+		toast.error(mensaje);
 	};
 
 	const registrarIngreso = async (e) => {
@@ -86,8 +88,8 @@ export default function ModuloAccesoGarita() {
 			});
 
 			setEstadoPantalla('EXITO');
+			toast.success('Acceso registrado con éxito');
 		} catch (error) {
-			// Mostramos el error exacto que venga de Oracle o Zod
 			const msgError =
 				error.response?.data?.mensaje ||
 				error.response?.data?.error?.[0]?.message ||
@@ -117,14 +119,11 @@ export default function ModuloAccesoGarita() {
 					</div>
 				</div>
 
-				{/* PANTALLA 1: LA CÁMARA */}
 				{estadoPantalla === 'ESCANEAR' && (
 					<div className="space-y-4">
 						<div className="overflow-hidden rounded-xl border-2 border-dashed border-zinc-700 aspect-square max-w-sm mx-auto relative bg-black">
 							<Scanner
-								// Soporte para versión NUEVA
 								onScan={(resultado) => procesarQr(resultado)}
-								// Soporte para versión VIEJA
 								onResult={(texto) => procesarQr(texto)}
 								onError={(error) => console.log('Error de cámara:', error?.message)}
 								options={{ delayBetweenScanAttempts: 500 }}
@@ -149,7 +148,6 @@ export default function ModuloAccesoGarita() {
 					</div>
 				)}
 
-				{/* PANTALLA 2: VALIDANDO */}
 				{estadoPantalla === 'VALIDANDO' && (
 					<div className="py-20 text-center space-y-4">
 						<div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -157,7 +155,6 @@ export default function ModuloAccesoGarita() {
 					</div>
 				)}
 
-				{/* PANTALLA 3: FORMULARIO DE ACCESO */}
 				{estadoPantalla === 'FORMULARIO' && invitacion && (
 					<form onSubmit={registrarIngreso} className="space-y-5 animate-in slide-in-from-bottom-4">
 						<div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-3">
@@ -230,7 +227,6 @@ export default function ModuloAccesoGarita() {
 					</form>
 				)}
 
-				{/* PANTALLA 4: ERROR */}
 				{estadoPantalla === 'ERROR' && (
 					<div className="py-12 text-center space-y-4 animate-in zoom-in-95">
 						<XCircle className="w-20 h-20 text-red-500 mx-auto" />
@@ -242,7 +238,6 @@ export default function ModuloAccesoGarita() {
 					</div>
 				)}
 
-				{/* PANTALLA 5: ÉXITO */}
 				{estadoPantalla === 'EXITO' && (
 					<div className="py-12 text-center space-y-4 animate-in zoom-in-95">
 						<div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto">

@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/ReservasPagina.jsx
+// ============================================================
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
 	Plus,
@@ -26,8 +29,8 @@ import { Campo, Entrada } from '../componentes/ui/Formularios.jsx';
 import { formatearFecha } from '../utilidades/formatearFecha.js';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
+import { toast } from 'sonner';
 
-// ─── Colores por área ─────────────────────────────────────────────────────
 const COLORES_AREA = [
 	{
 		bg: 'bg-violet-500/20',
@@ -85,21 +88,18 @@ const MESES = [
 const HORAS_DIA = Array.from(
 	{ length: 15 },
 	(_, i) => `${(i + 8).toString().padStart(2, '0')}:00`,
-); // 08-22
+);
 
-// Horas disponibles para selección en wizard (08:00 – 22:00)
 const HORAS_SELECTOR = Array.from({ length: 15 }, (_, i) => {
 	const h = (i + 8).toString().padStart(2, '0');
 	return `${h}:00`;
 });
 
-// Fecha mínima = hoy en formato YYYY-MM-DD (sin hora para evitar problemas de timezone)
 const fechaMinHoy = () => {
 	const d = new Date();
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-// ─── Helpers de tiempo ───────────────────────────────────────────────────
 function horaAMin(h) {
 	const [hh, mm] = h.split(':').map(Number);
 	return hh * 60 + mm;
@@ -127,25 +127,21 @@ function diasDesMes(year, month) {
 	return celdas;
 }
 
-// ─── Componente principal ─────────────────────────────────────────────────
 export default function ReservasPagina({ filtroGlobal = '' }) {
 	const usuario = useStore((s) => s.usuario);
 	const esAdmin = usuario?.ROL === 'Administrador';
 
 	const { reservas, areas, cargando, error, cargarReservas, crear, cancelar } = useReservas();
 
-	// Vista
 	const [vistaCalendario, setVistaCalendario] = useState(true);
-	const [modoCalendario, setModoCalendario] = useState('semana'); // 'semana' | 'mes'
+	const [modoCalendario, setModoCalendario] = useState('semana');
 	const [fechaRef, setFechaRef] = useState(hoy());
 
-	// Modales
-	const [modal, setModal] = useState(null); // 'wizard'|'ver'|'cancelar'|'historial'
+	const [modal, setModal] = useState(null);
 	const [seleccion, setSeleccion] = useState(null);
 	const [historial, setHistorial] = useState([]);
 	const [filaActiva, setFilaActiva] = useState(null);
 
-	// Wizard
 	const [paso, setPaso] = useState(1);
 	const [areaElegida, setAreaElegida] = useState(null);
 	const [wizForm, setWizForm] = useState({
@@ -159,13 +155,11 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 	const [verificando, setVerificando] = useState(false);
 	const [errorWiz, setErrorWiz] = useState('');
 
-	// Cancelar
 	const [motivoCancelar, setMotivoCancelar] = useState('');
 	const [errorCancelar, setErrorCancelar] = useState('');
 
 	const debRef = useRef(null);
 
-	// Map área → color
 	const colorDeArea = useCallback(
 		(idArea) => {
 			const idx = areas.findIndex((a) => a.ID_AREA === idArea);
@@ -174,7 +168,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 		[areas],
 	);
 
-	// ── Verificar disponibilidad con debounce ──────────────────────────────
 	useEffect(() => {
 		if (
 			paso !== 2 ||
@@ -216,7 +209,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 		return () => clearTimeout(debRef.current);
 	}, [paso, areaElegida, wizForm.fechaReserva, wizForm.horaInicio, wizForm.horaFin]);
 
-	// ── Abrir wizard ───────────────────────────────────────────────────────
 	const abrirWizard = () => {
 		setPaso(1);
 		setAreaElegida(null);
@@ -227,7 +219,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 		setModal('wizard');
 	};
 
-	// ── Guardar reserva ────────────────────────────────────────────────────
 	const guardarReserva = async () => {
 		setErrorWiz('');
 		try {
@@ -239,18 +230,18 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 				numeroBoleta: wizForm.numeroBoleta.trim(),
 			});
 			setModal(null);
+			toast.success('Reserva creada exitosamente');
 		} catch (err) {
 			setErrorWiz(extraerError(err));
+			toast.error('Error al crear la reserva');
 		}
 	};
 
-	// ── Ver detalle ────────────────────────────────────────────────────────
 	const abrirVer = (r) => {
 		setSeleccion(r);
 		setModal('ver');
 	};
 
-	// ── Cancelar reserva ───────────────────────────────────────────────────
 	const abrirCancelar = (r) => {
 		setSeleccion(r);
 		setMotivoCancelar('');
@@ -265,12 +256,13 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 		try {
 			await cancelar(seleccion.ID_RESERVA, motivoCancelar.trim());
 			setModal(null);
+			toast.success('Reserva cancelada exitosamente');
 		} catch (err) {
 			setErrorCancelar(extraerError(err));
+			toast.error('Error al cancelar la reserva');
 		}
 	};
 
-	// ── Historial de cancelaciones ─────────────────────────────────────────
 	const abrirHistorial = async (r) => {
 		setSeleccion(r);
 		try {
@@ -282,7 +274,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 		setModal('historial');
 	};
 
-	// ── Navegación calendario ─────────────────────────────────────────────
 	const navAnterior = () => {
 		const d = new Date(fechaRef);
 		if (modoCalendario === 'semana') d.setDate(d.getDate() - 7);
@@ -297,7 +288,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 	};
 	const irHoy = () => setFechaRef(hoy());
 
-	// ── Reservas por día ──────────────────────────────────────────────────
 	const reservasEnDia = (fecha) =>
 		reservas.filter((r) => {
 			if (r.ESTADO === 'CANCELADA') return false;
@@ -305,11 +295,9 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 			return mismodia(f, fecha);
 		});
 
-	// ── Métricas ──────────────────────────────────────────────────────────
 	const apartadas = reservas.filter((r) => r.ESTADO === 'APARTADA').length;
 	const canceladas = reservas.filter((r) => r.ESTADO === 'CANCELADA').length;
 
-	// ── Filtrado tabla ────────────────────────────────────────────────────
 	const termino = limpiar(filtroGlobal);
 	const filtradas = termino
 		? reservas.filter(
@@ -324,10 +312,8 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 	if (cargando) return <div className="text-secundario text-sm p-8">Cargando reservas...</div>;
 	if (error) return <div className="text-red-400 text-sm p-8">{error}</div>;
 
-	// ─── RENDER ────────────────────────────────────────────────────────────
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total reservas"
@@ -355,7 +341,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* Leyenda de áreas */}
 			{areas.length > 0 && (
 				<div className="flex items-center gap-3 flex-wrap">
 					{areas.map((area, i) => {
@@ -374,9 +359,7 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 				</div>
 			)}
 
-			{/* Calendario */}
 			<div className="border border-borde rounded-xl overflow-hidden shadow-sm bg-fondo">
-				{/* Header del calendario */}
 				<div className="flex items-center justify-between px-5 py-3 border-b border-borde bg-tarjeta/50">
 					<div className="flex items-center gap-2">
 						<button
@@ -410,7 +393,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 					</div>
 
 					<div className="flex items-center gap-2">
-						{/* Toggle semana/mes */}
 						<div className="flex items-center border border-borde rounded-lg overflow-hidden">
 							<button
 								onClick={() => setModoCalendario('semana')}
@@ -426,7 +408,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 							</button>
 						</div>
 
-						{/* Toggle vista */}
 						<div className="flex items-center border border-borde rounded-lg overflow-hidden">
 							<button
 								onClick={() => setVistaCalendario(true)}
@@ -448,10 +429,8 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 					</div>
 				</div>
 
-				{/* ── Vista Calendario ── */}
 				{vistaCalendario && (
 					<>
-						{/* Vista SEMANA */}
 						{modoCalendario === 'semana' &&
 							(() => {
 								const inicio = inicioSemana(fechaRef);
@@ -459,7 +438,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 								return (
 									<div className="overflow-x-auto">
 										<div className="min-w-[700px]">
-											{/* Cabecera días */}
 											<div className="grid grid-cols-8 border-b border-borde">
 												<div className="px-3 py-2 text-[10px] text-zinc-600 font-bold uppercase" />
 												{dias.map((dia, i) => {
@@ -482,7 +460,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 												})}
 											</div>
 
-											{/* Filas de hora */}
 											<div className="max-h-[480px] overflow-y-auto custom-scrollbar">
 												{HORAS_DIA.map((hora) => (
 													<div
@@ -529,13 +506,11 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 								);
 							})()}
 
-						{/* Vista MES */}
 						{modoCalendario === 'mes' &&
 							(() => {
 								const celdas = diasDesMes(fechaRef.getFullYear(), fechaRef.getMonth());
 								return (
 									<div>
-										{/* Cabecera días semana */}
 										<div className="grid grid-cols-7 border-b border-borde">
 											{DIAS_CORTO.map((d) => (
 												<div
@@ -546,7 +521,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 												</div>
 											))}
 										</div>
-										{/* Celdas del mes */}
 										<div className="grid grid-cols-7">
 											{celdas.map((dia, i) => {
 												if (!dia)
@@ -593,7 +567,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 					</>
 				)}
 
-				{/* ── Vista Lista ── */}
 				{!vistaCalendario && (
 					<div className="overflow-x-auto">
 						<table className="w-full">
@@ -676,14 +649,8 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 				)}
 			</div>
 
-			{/* ══════════════════════════════════════════════════════════════
-			    MODALES
-			══════════════════════════════════════════════════════════════ */}
-
-			{/* ── Wizard nueva reserva ── */}
 			{modal === 'wizard' && (
 				<Modal titulo="Nueva Reserva" alCerrar={() => setModal(null)}>
-					{/* Stepper */}
 					<div className="flex items-center gap-2 mb-6">
 						{['Área', 'Horario', 'Confirmar'].map((label, i) => {
 							const num = i + 1;
@@ -696,7 +663,7 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 										<div className={`flex items-center gap-1.5`}>
 											<div
 												className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-colors
-												${activo ? 'bg-primario text-fondo' : listo ? 'bg-emerald-500 text-fondo' : 'bg-zinc-800 text-zinc-500'}`}
+                                                ${activo ? 'bg-primario text-fondo' : listo ? 'bg-emerald-500 text-fondo' : 'bg-zinc-800 text-zinc-500'}`}
 											>
 												{listo ? '✓' : num}
 											</div>
@@ -712,7 +679,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 						})}
 					</div>
 
-					{/* ── Paso 1: Elegir área ── */}
 					{paso === 1 && (
 						<div className="space-y-3">
 							<p className="text-xs text-zinc-500 mb-4">
@@ -781,7 +747,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 						</div>
 					)}
 
-					{/* ── Paso 2: Horario ── */}
 					{paso === 2 && (
 						<div className="space-y-4">
 							<div
@@ -811,12 +776,10 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 									>
 										<option value="">Seleccionar...</option>
 										{(() => {
-											// Si la fecha elegida es hoy, filtrar horas que ya pasaron
 											const esHoy = wizForm.fechaReserva === fechaMinHoy();
 											const horaActualMin = esHoy
 												? new Date().getHours() * 60 + new Date().getMinutes()
 												: 0;
-											// Hasta 21:00 porque necesita al menos 1h antes del cierre (22:00)
 											return HORAS_SELECTOR.slice(0, -1)
 												.filter((h) => horaAMin(h) > horaActualMin)
 												.map((h) => (
@@ -836,7 +799,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 										className="w-full px-3 py-2 text-sm border rounded-lg bg-fondo border-borde text-primario focus:outline-none focus:border-zinc-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
 									>
 										<option value="">Seleccionar...</option>
-										{/* Solo horas posteriores a horaInicio */}
 										{wizForm.horaInicio &&
 											HORAS_SELECTOR.filter((h) => horaAMin(h) > horaAMin(wizForm.horaInicio)).map(
 												(h) => (
@@ -849,7 +811,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 								</Campo>
 							</div>
 
-							{/* Indicador disponibilidad */}
 							{verificando && (
 								<div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 border border-borde text-xs text-zinc-400">
 									<div className="w-3 h-3 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
@@ -916,16 +877,13 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 						</div>
 					)}
 
-					{/* ── Paso 3: Confirmar ── */}
 					{paso === 3 &&
 						(() => {
-							// Calcular siempre localmente — no depender del estado async del backend
 							const horasCalc = (horaAMin(wizForm.horaFin) - horaAMin(wizForm.horaInicio)) / 60;
 							const costoCalc =
 								costo?.costoTotal ?? horasCalc * Number(areaElegida.PRECIO_POR_HORA ?? 0);
 							return (
 								<div className="space-y-4">
-									{/* Resumen */}
 									<div className="rounded-xl border border-borde overflow-hidden">
 										<div className="px-4 py-2.5 bg-tarjeta/50 border-b border-borde">
 											<span className="text-[11px] font-bold uppercase tracking-wide text-secundario">
@@ -955,7 +913,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 										</div>
 									</div>
 
-									{/* Boleta */}
 									<Campo etiqueta="Número de Boleta de Pago">
 										<Entrada
 											required
@@ -1001,7 +958,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* ── Modal ver detalle ── */}
 			{modal === 'ver' && seleccion && (
 				<Modal titulo={`Reserva #${seleccion.ID_RESERVA}`} alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
@@ -1041,7 +997,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* ── Modal cancelar ── */}
 			{modal === 'cancelar' && seleccion && (
 				<Modal titulo="Cancelar Reserva" alCerrar={() => setModal(null)}>
 					<div className="space-y-4">
@@ -1073,7 +1028,6 @@ export default function ReservasPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* ── Modal historial cancelaciones ── */}
 			{modal === 'historial' && seleccion && (
 				<Modal
 					titulo={`Historial — Reserva #${seleccion.ID_RESERVA}`}

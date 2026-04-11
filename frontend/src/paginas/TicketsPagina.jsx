@@ -1,3 +1,6 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/TicketsPagina.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import {
 	Plus,
@@ -22,6 +25,7 @@ import { Campo, Entrada, Selector } from '../componentes/ui/Formularios.jsx';
 import { formatearFecha } from '../utilidades/formatearFecha.js';
 import { extraerError } from '../utilidades/extraerError.js';
 import useStore from '../estado/useStore.js';
+import { toast } from 'sonner';
 
 const ESTADOS = ['ABIERTO', 'EN_PROGRESO', 'RESUELTO', 'CERRADO', 'CANCELADO'];
 
@@ -42,7 +46,6 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 	const [errorModal, setErrorModal] = useState('');
 	const [personal, setPersonal] = useState([]);
 
-	// Cargar guardias y colaboradores activos al montar
 	useEffect(() => {
 		usuariosApi
 			.obtenerTodos()
@@ -139,20 +142,25 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 
 			if (modal === 'crear') {
 				await crear(datosAEnviar);
+				toast.success('Ticket creado exitosamente');
 			} else {
 				await actualizar(seleccion.ID_TICKET, datosAEnviar);
+				toast.success('Ticket actualizado exitosamente');
 			}
 			setModal(null);
 		} catch (err) {
 			setErrorModal(extraerError(err));
+			toast.error('Error al guardar el ticket');
 		}
 	};
 
 	const confirmarEliminar = async () => {
 		try {
 			await eliminar(aEliminar.ID_TICKET);
+			toast.success('Ticket eliminado exitosamente');
 		} catch (err) {
 			console.error('Error al eliminar:', extraerError(err));
+			toast.error('Error al eliminar el ticket');
 		}
 		setAEliminar(null);
 	};
@@ -162,7 +170,6 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 
 	return (
 		<div className="space-y-6 animate-in fade-in duration-300">
-			{/* Métricas */}
 			<div className="grid grid-cols-4 gap-4">
 				<TarjetaMetrica
 					etiqueta="Total"
@@ -190,7 +197,6 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 				/>
 			</div>
 
-			{/* Tabla */}
 			<div className="border bg-fondo border-borde rounded-xl overflow-hidden shadow-sm">
 				<div className="flex items-center justify-between p-4 border-b border-borde bg-tarjeta/50">
 					<BuscadorCasa valor={busqueda} alCambiar={setBusqueda} />
@@ -251,7 +257,6 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 				<PieTabla mostrados={filtrados.length} total={tickets.length} unidad="tickets" />
 			</div>
 
-			{/* Modal crear/editar */}
 			{(modal === 'crear' || modal === 'editar') && (
 				<Modal
 					titulo={modal === 'crear' ? 'Nuevo Ticket' : 'Editar Ticket'}
@@ -344,7 +349,6 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal ver */}
 			{modal === 'ver' && seleccion && (
 				<Modal titulo="Detalle del Ticket" alCerrar={() => setModal(null)}>
 					<div className="space-y-3 text-sm">
@@ -367,7 +371,6 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal historial */}
 			{modal === 'historial' && seleccion && (
 				<Modal
 					titulo={`Historial — Ticket #${seleccion.ID_TICKET}`}
@@ -398,7 +401,6 @@ export default function TicketsPagina({ filtroGlobal = '' }) {
 				</Modal>
 			)}
 
-			{/* Modal confirmación eliminar */}
 			{aEliminar && (
 				<ModalConfirmacion
 					titulo="¿Eliminar ticket?"

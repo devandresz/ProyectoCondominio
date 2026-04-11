@@ -1,17 +1,14 @@
 // ============================================================
 // 📁 RUTA: frontend/src/paginas/LoginPagina.jsx
 // ============================================================
-
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import { CaballoAnimado, AnimacionCarga } from '../componentes/ui/Animaciones.jsx';
 import useStore from '../estado/useStore.js';
 import { usuariosApi } from '../api/usuariosApi.js';
+import { toast } from 'sonner';
 
-/* ══════════════════════════════════════════════════════════
-   FONDO: constelaciones + orbs flotantes
-══════════════════════════════════════════════════════════ */
 function FondoEspacio({ oscuro }) {
 	const canvasRef = useRef(null);
 	const animRef = useRef(null);
@@ -28,7 +25,6 @@ function FondoEspacio({ oscuro }) {
 		resize();
 		window.addEventListener('resize', resize);
 
-		// Estrellas estáticas
 		const ESTRELLAS = Array.from({ length: 180 }, () => ({
 			x: Math.random(),
 			y: Math.random(),
@@ -38,7 +34,6 @@ function FondoEspacio({ oscuro }) {
 			vel: 0.4 + Math.random() * 0.8,
 		}));
 
-		// Constelaciones — grupos de puntos conectados
 		const CONSTELACIONES = [
 			[
 				[0.1, 0.12],
@@ -82,7 +77,6 @@ function FondoEspacio({ oscuro }) {
 			const t = Date.now() / 1000;
 			ctx.clearRect(0, 0, W, H);
 
-			// ── Gradiente de fondo ──────────────────────────
 			const grad = ctx.createLinearGradient(0, 0, W, H);
 			if (oscuro) {
 				grad.addColorStop(0, '#050510');
@@ -98,7 +92,6 @@ function FondoEspacio({ oscuro }) {
 			ctx.fillStyle = grad;
 			ctx.fillRect(0, 0, W, H);
 
-			// ── Orbs de color flotantes (fondo) ────────────
 			const ORBS = [
 				{
 					x: 0.15,
@@ -149,7 +142,6 @@ function FondoEspacio({ oscuro }) {
 				ctx.fill();
 			});
 
-			// ── Estrellas titilantes ────────────────────────
 			ESTRELLAS.forEach((s) => {
 				const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * s.vel + s.fase));
 				const sx = s.x * W,
@@ -161,7 +153,6 @@ function FondoEspacio({ oscuro }) {
 					: `rgba(80,80,120,${alpha * 0.5})`;
 				ctx.fill();
 
-				// Cruz de destellos en estrellas grandes
 				if (s.r > 1.2 && alpha > 0.7) {
 					ctx.strokeStyle = oscuro
 						? `rgba(255,255,255,${(alpha - 0.5) * 0.4})`
@@ -179,7 +170,6 @@ function FondoEspacio({ oscuro }) {
 				}
 			});
 
-			// ── Constelaciones ──────────────────────────────
 			CONSTELACIONES.forEach((pts) => {
 				ctx.beginPath();
 				pts.forEach(([px, py], i) => {
@@ -191,7 +181,6 @@ function FondoEspacio({ oscuro }) {
 				ctx.lineWidth = 0.8;
 				ctx.stroke();
 
-				// Nodos de constelación
 				pts.forEach(([px, py]) => {
 					ctx.beginPath();
 					ctx.arc(px * W, py * H, 1.8, 0, Math.PI * 2);
@@ -218,9 +207,6 @@ function FondoEspacio({ oscuro }) {
 	);
 }
 
-/* ══════════════════════════════════════════════════════════
-   FORMAS ORGÁNICAS FLOTANTES (SVG blur)
-══════════════════════════════════════════════════════════ */
 function FormasOrganicas({ oscuro }) {
 	return (
 		<div
@@ -232,7 +218,6 @@ function FormasOrganicas({ oscuro }) {
 				overflow: 'hidden',
 			}}
 		>
-			{/* Blob superior izquierdo */}
 			<div
 				style={{
 					position: 'absolute',
@@ -248,7 +233,6 @@ function FormasOrganicas({ oscuro }) {
 					animation: 'flotar1 12s ease-in-out infinite',
 				}}
 			/>
-			{/* Blob inferior derecho */}
 			<div
 				style={{
 					position: 'absolute',
@@ -264,7 +248,6 @@ function FormasOrganicas({ oscuro }) {
 					animation: 'flotar2 15s ease-in-out infinite',
 				}}
 			/>
-			{/* Blob central derecho */}
 			<div
 				style={{
 					position: 'absolute',
@@ -281,28 +264,25 @@ function FormasOrganicas({ oscuro }) {
 				}}
 			/>
 			<style>{`
-				@keyframes flotar1 {
-					0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
-					33%     { transform: translate(3%,4%) rotate(8deg) scale(1.05); }
-					66%     { transform: translate(-2%,2%) rotate(-5deg) scale(0.97); }
-				}
-				@keyframes flotar2 {
-					0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
-					40%     { transform: translate(-4%,-3%) rotate(-10deg) scale(1.08); }
-					70%     { transform: translate(2%,-5%) rotate(6deg) scale(0.95); }
-				}
-				@keyframes flotar3 {
-					0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
-					50%     { transform: translate(-6%,4%) rotate(12deg) scale(1.06); }
-				}
-			`}</style>
+                @keyframes flotar1 {
+                    0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
+                    33%     { transform: translate(3%,4%) rotate(8deg) scale(1.05); }
+                    66%     { transform: translate(-2%,2%) rotate(-5deg) scale(0.97); }
+                }
+                @keyframes flotar2 {
+                    0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
+                    40%     { transform: translate(-4%,-3%) rotate(-10deg) scale(1.08); }
+                    70%     { transform: translate(2%,-5%) rotate(6deg) scale(0.95); }
+                }
+                @keyframes flotar3 {
+                    0%,100% { transform: translate(0,0) rotate(0deg) scale(1); }
+                    50%     { transform: translate(-6%,4%) rotate(12deg) scale(1.06); }
+                }
+            `}</style>
 		</div>
 	);
 }
 
-/* ══════════════════════════════════════════════════════════
-   LOGIN PRINCIPAL
-══════════════════════════════════════════════════════════ */
 export default function LoginPagina() {
 	const navigate = useNavigate();
 	const { setUsuario, temaOscuro, toggleTema } = useStore();
@@ -324,7 +304,6 @@ export default function LoginPagina() {
 		return () => clearTimeout(t);
 	}, []);
 
-	// ── Lógica del caballo (intacta) ─────────────────────
 	const tapado = focusPassword && !mostrarPassword;
 	const asomado = focusPassword && mostrarPassword;
 
@@ -368,15 +347,17 @@ export default function LoginPagina() {
 		if (!usuario.trim() || !contrasena) {
 			setShake(true);
 			setTimeout(() => setShake(false), 600);
+			toast.error('Por favor ingresa usuario y contraseña');
 			return;
 		}
 		setCargando(true);
 		try {
 			const res = await usuariosApi.login({ nombreUsuario: usuario, contrasena });
 			setUsuario(res.data);
+			toast.success(`Bienvenido, ${res.data.NOMBRE || usuario}`);
 			navigate('/dashboard');
 		} catch (err) {
-			alert(err.response?.data?.mensaje ?? 'Error al conectar con el servidor.');
+			toast.error(err.response?.data?.mensaje ?? 'Error al conectar con el servidor.');
 			setShake(true);
 			setTimeout(() => setShake(false), 600);
 		} finally {
@@ -388,7 +369,6 @@ export default function LoginPagina() {
 
 	const o = temaOscuro;
 
-	// Glassmorphism styles
 	const glass = {
 		background: o ? 'rgba(15,15,25,0.55)' : 'rgba(255,255,255,0.45)',
 		backdropFilter: 'blur(28px) saturate(1.6)',
@@ -434,11 +414,9 @@ export default function LoginPagina() {
 				overflow: 'hidden',
 			}}
 		>
-			{/* ── Capas de fondo ─────────────────────────── */}
 			<FondoEspacio oscuro={o} />
 			<FormasOrganicas oscuro={o} />
 
-			{/* ── Toggle tema ────────────────────────────── */}
 			<div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 100 }}>
 				<button
 					onClick={toggleTema}
@@ -471,7 +449,6 @@ export default function LoginPagina() {
 				</button>
 			</div>
 
-			{/* ══ TARJETA PRINCIPAL (glassmorphism) ══════════ */}
 			<div
 				style={{
 					position: 'relative',
@@ -488,7 +465,6 @@ export default function LoginPagina() {
 					animation: shake ? 'loginShake 0.55s ease' : undefined,
 				}}
 			>
-				{/* Línea de acento superior */}
 				<div
 					style={{
 						position: 'absolute',
@@ -502,7 +478,6 @@ export default function LoginPagina() {
 					}}
 				/>
 
-				{/* Logo pequeño */}
 				<div
 					style={{
 						display: 'flex',
@@ -524,7 +499,6 @@ export default function LoginPagina() {
 					</span>
 				</div>
 
-				{/* ── CABALLO ────────────────────────────────── */}
 				<div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
 					<div
 						style={{
@@ -536,7 +510,6 @@ export default function LoginPagina() {
 					</div>
 				</div>
 
-				{/* Encabezado */}
 				<div style={{ textAlign: 'center', marginBottom: '28px' }}>
 					<h1
 						style={{
@@ -560,12 +533,10 @@ export default function LoginPagina() {
 					</p>
 				</div>
 
-				{/* ── FORMULARIO ─────────────────────────────── */}
 				<form
 					onSubmit={handleSubmit}
 					style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}
 				>
-					{/* Usuario */}
 					<div>
 						<label
 							style={{
@@ -613,7 +584,6 @@ export default function LoginPagina() {
 						</div>
 					</div>
 
-					{/* Contraseña */}
 					<div>
 						<label
 							style={{
@@ -678,7 +648,6 @@ export default function LoginPagina() {
 						</div>
 					</div>
 
-					{/* Botón */}
 					<button
 						type="submit"
 						style={{
@@ -719,7 +688,6 @@ export default function LoginPagina() {
 					</button>
 				</form>
 
-				{/* Footer */}
 				<div
 					style={{
 						marginTop: '24px',
@@ -752,22 +720,21 @@ export default function LoginPagina() {
 				</div>
 			</div>
 
-			{/* Keyframes */}
 			<style>{`
-				@keyframes loginShake {
-					0%,100% { transform: translateY(0) scale(1) translateX(0); }
-					15%     { transform: translateY(0) scale(1.01) translateX(-8px); }
-					30%     { transform: translateY(0) scale(0.99) translateX(7px); }
-					45%     { transform: translateY(0) scale(1.01) translateX(-5px); }
-					60%     { transform: translateY(0) scale(1)    translateX(4px); }
-					75%     { transform: translateY(0) scale(1)    translateX(-2px); }
-				}
-				@keyframes pulsarPunto {
-					0%,100% { opacity: 1;   transform: scale(1); }
-					50%     { opacity: 0.4; transform: scale(0.8); }
-				}
-				input::placeholder { color: ${temaOscuro ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.28)'}; }
-			`}</style>
+                @keyframes loginShake {
+                    0%,100% { transform: translateY(0) scale(1) translateX(0); }
+                    15%     { transform: translateY(0) scale(1.01) translateX(-8px); }
+                    30%     { transform: translateY(0) scale(0.99) translateX(7px); }
+                    45%     { transform: translateY(0) scale(1.01) translateX(-5px); }
+                    60%     { transform: translateY(0) scale(1)    translateX(4px); }
+                    75%     { transform: translateY(0) scale(1)    translateX(-2px); }
+                }
+                @keyframes pulsarPunto {
+                    0%,100% { opacity: 1;   transform: scale(1); }
+                    50%     { opacity: 0.4; transform: scale(0.8); }
+                }
+                input::placeholder { color: ${temaOscuro ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.28)'}; }
+            `}</style>
 		</div>
 	);
 }

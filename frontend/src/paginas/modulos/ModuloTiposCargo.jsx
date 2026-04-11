@@ -1,14 +1,8 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/modulos/ModuloTiposCargo.jsx
+// ============================================================
 import { useEffect, useMemo, useState } from 'react';
-import {
-	Layers,
-	ShieldAlert,
-	Coins,
-	CheckCircle,
-	Plus,
-	Eye,
-	Pencil,
-	Ban,
-} from 'lucide-react';
+import { Layers, ShieldAlert, Coins, CheckCircle, Plus, Eye, Pencil, Ban } from 'lucide-react';
 import { tiposCargoApi } from '../../api/tiposCargo.js';
 import { limpiarBusqueda } from '../../datos/datosDePrueba.js';
 import { TarjetaMetrica, Etiqueta } from '../../componentes/ui/Etiquetas.jsx';
@@ -17,6 +11,7 @@ import { BtnPrimario, BtnAccion, BotonesModal } from '../../componentes/ui/Boton
 import { CabeceraTabla, Fila, Celda, PieTabla } from '../../componentes/ui/Tablas.jsx';
 import { Modal } from '../../componentes/ui/Modales.jsx';
 import { Campo, Entrada, Selector } from '../../componentes/ui/Formularios.jsx';
+import { toast } from 'sonner';
 
 export default function ModuloTiposCargo({ filtroGlobal = '' }) {
 	const [datos, setDatos] = useState([]);
@@ -100,8 +95,10 @@ export default function ModuloTiposCargo({ filtroGlobal = '' }) {
 
 			if (editandoId) {
 				await tiposCargoApi.actualizar(editandoId, payload);
+				toast.success('Tipo de cargo actualizado exitosamente');
 			} else {
 				await tiposCargoApi.crear(payload);
+				toast.success('Tipo de cargo creado exitosamente');
 			}
 
 			await cargarTiposCargo();
@@ -109,7 +106,7 @@ export default function ModuloTiposCargo({ filtroGlobal = '' }) {
 			setEditandoId(null);
 		} catch (error) {
 			console.error('Error al guardar tipo de cargo:', error);
-			alert(error?.response?.data?.mensaje || 'No se pudo guardar el tipo de cargo.');
+			toast.error(error?.response?.data?.mensaje || 'No se pudo guardar el tipo de cargo.');
 		} finally {
 			setGuardando(false);
 		}
@@ -124,9 +121,10 @@ export default function ModuloTiposCargo({ filtroGlobal = '' }) {
 			}
 
 			await cargarTiposCargo();
+			toast.success('Estado actualizado correctamente');
 		} catch (error) {
 			console.error('Error al cambiar estado:', error);
-			alert('No se pudo cambiar el estado.');
+			toast.error('No se pudo cambiar el estado.');
 		}
 	}
 
@@ -187,9 +185,7 @@ export default function ModuloTiposCargo({ filtroGlobal = '' }) {
 								indice={i}
 								seleccionada={filaActiva === tipo.ID_TIPO_CARGO}
 								onClick={() =>
-									setFilaActiva(
-										filaActiva === tipo.ID_TIPO_CARGO ? null : tipo.ID_TIPO_CARGO,
-									)
+									setFilaActiva(filaActiva === tipo.ID_TIPO_CARGO ? null : tipo.ID_TIPO_CARGO)
 								}
 							>
 								<Celda mono>{tipo.NOMBRE}</Celda>

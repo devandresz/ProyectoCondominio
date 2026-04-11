@@ -1,9 +1,13 @@
+// ============================================================
+// 📁 RUTA: frontend/src/paginas/GaritaPagina.jsx
+// ============================================================
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Camera, X, CheckCircle2, AlertTriangle, UserCheck, QrCode } from 'lucide-react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { accesoGaritaApi } from '../api/accesoGaritaApi.js';
 import useStore from '../estado/useStore.js';
+import { toast } from 'sonner';
 
 export default function GaritaPagina() {
 	const { codigo } = useParams();
@@ -22,20 +26,15 @@ export default function GaritaPagina() {
 		observaciones: '',
 	});
 
-	// ── EXTRAER CÓDIGO A PRUEBA DE BALAS 🔥 ────────────────────────
 	const extraerCodigo = (texto) => {
 		if (!texto) return '';
-		// Si el escáner moderno devuelve un array/objeto, sacamos el texto real
 		const str = typeof texto === 'string' ? texto : texto[0]?.rawValue || String(texto);
-
-		// Cortamos cualquier "http://..." y nos quedamos solo con lo que importa
 		if (str.includes('QR-')) {
 			return 'QR-' + str.split('QR-')[1].trim();
 		}
 		return str.trim();
 	};
 
-	// ── PROCESAR QR ──────────────────────────────────────────
 	const procesarQr = async (textoQr) => {
 		if (!textoQr || estadoPantalla !== 'ESCANEAR') return;
 
@@ -53,7 +52,6 @@ export default function GaritaPagina() {
 				return;
 			}
 
-			// Validar expiración para tipo Normal (ID_TIPO = 1)
 			if (datosInvitacion.TIPO_NOMBRE === 'Normal' || datosInvitacion.TIPO === 'Normal') {
 				if (datosInvitacion.FECHA_EXPIRACION) {
 					const expiracion = new Date(datosInvitacion.FECHA_EXPIRACION);
@@ -67,6 +65,7 @@ export default function GaritaPagina() {
 			setInvitacion(datosInvitacion);
 			setForm((prev) => ({ ...prev, nombreReal: datosInvitacion.NOMBRE_VISITANTE }));
 			setEstadoPantalla('FORMULARIO');
+			toast.success('Código QR validado correctamente');
 		} catch (error) {
 			lanzarError(
 				error.response?.data?.mensaje || 'El código QR es inválido o no existe en el sistema.',
@@ -80,7 +79,6 @@ export default function GaritaPagina() {
 		}
 	}, [codigo]);
 
-	// ── REGISTRAR INGRESO ─────────────────────────────────────
 	const registrarIngreso = async (e) => {
 		e.preventDefault();
 		try {
@@ -93,6 +91,7 @@ export default function GaritaPagina() {
 				observaciones: form.observaciones,
 			});
 			setEstadoPantalla('EXITO');
+			toast.success('Ingreso registrado con éxito');
 		} catch (error) {
 			const msgError =
 				error.response?.data?.mensaje ||
@@ -105,6 +104,7 @@ export default function GaritaPagina() {
 	const lanzarError = (mensaje) => {
 		setMensajeError(mensaje);
 		setEstadoPantalla('ERROR');
+		toast.error(mensaje);
 	};
 
 	const reiniciarEscaner = () => {
@@ -124,14 +124,11 @@ export default function GaritaPagina() {
 			</header>
 
 			<main className="flex-1 flex flex-col items-center justify-center p-6">
-				{/* 1. PANTALLA DE ESCANEO */}
 				{estadoPantalla === 'ESCANEAR' && (
 					<div className="w-full max-w-sm flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
 						<div className="w-full aspect-square bg-black border-2 border-dashed border-zinc-700 rounded-3xl overflow-hidden relative mb-6 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
 							<Scanner
-								// Soporte para versión NUEVA
 								onScan={(resultado) => procesarQr(resultado)}
-								// Soporte para versión VIEJA
 								onResult={(texto) => procesarQr(texto)}
 								onError={(e) => console.log('Error de cámara:', e?.message)}
 								options={{ delayBetweenScanAttempts: 500 }}
@@ -165,7 +162,6 @@ export default function GaritaPagina() {
 					</div>
 				)}
 
-				{/* 2. CARGANDO */}
 				{estadoPantalla === 'VALIDANDO' && (
 					<div className="flex flex-col items-center">
 						<div className="w-16 h-16 border-4 border-zinc-600 border-t-emerald-500 rounded-full animate-spin mb-6" />
@@ -173,7 +169,6 @@ export default function GaritaPagina() {
 					</div>
 				)}
 
-				{/* 3. FORMULARIO DE INGRESO */}
 				{estadoPantalla === 'FORMULARIO' && invitacion && (
 					<div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl animate-in slide-in-from-bottom-8 duration-300">
 						<div className="text-center mb-6">
@@ -250,7 +245,6 @@ export default function GaritaPagina() {
 					</div>
 				)}
 
-				{/* 4. ÉXITO */}
 				{estadoPantalla === 'EXITO' && (
 					<div className="flex flex-col items-center animate-in zoom-in-95 duration-300">
 						<div className="w-24 h-24 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6">
@@ -269,7 +263,6 @@ export default function GaritaPagina() {
 					</div>
 				)}
 
-				{/* 5. ERROR */}
 				{estadoPantalla === 'ERROR' && (
 					<div className="flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300 w-full max-w-sm">
 						<div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
