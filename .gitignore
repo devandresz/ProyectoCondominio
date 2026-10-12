@@ -1,6 +1,12 @@
 # Dependencias
 node_modules/
 
+# Configuración local por aplicación (los ejemplos no contienen secretos)
+frontend/.env
+backend/.env
+!frontend/.env.example
+!backend/.env.example
+
 # Variables de entorno (¡MUY IMPORTANTE para que no se suban tus contraseñas!)
 .env
 .env.local
